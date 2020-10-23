@@ -1,0 +1,99 @@
+Block = { Statement ~ (Divider ~ "\n"* ~ Statement)* }
+
+WrappedBlock = _{ "{" ~ "\n"? ~ Block ~ "\n"? ~ "}"}
+
+Statement = { Async? ~ (WhileLoop | ForLoop | Conditional | WrappedBlock | Assignment | Expr | LineComment) }
+
+Async = { "async" }
+
+Assignment = { Ident ~ GetIndex? ~ (ImplizitAssignmentOp | (ExplizitAssignmentOp ~ Expr)) }
+
+ForLoop = { "for" ~ Ident ~ "in" ~ Expr ~ WrappedBlock}
+
+WhileLoop = { "while" ~ Expr ~ WrappedBlock}
+
+Conditional = {If ~ Elif* ~ Else?}
+
+If = _{ "if" ~ Expr ~ WrappedBlock }
+
+Elif = _{ "elif" ~ Expr ~ WrappedBlock }
+
+Else = _{ "else" ~ WrappedBlock }
+
+Var = { Ident }
+
+Expr = { UnaryExpr ~ (Operator ~ UnaryExpr)* }
+
+UnaryExpr = { UnaryLOp ~ Term | Term ~ UnaryROp | Term ~ GetIndex | Term ~ ChainedCall | Term }
+
+ImplizitAssignmentOp = { "++" | "--"}
+
+ExplizitAssignmentOp = { "=" | "*=" | "/=" | "+=" | "-=" }
+
+GetIndex = { "[" ~ Expr ~ "]" }
+
+ChainedCall = { "(" ~ Arguments? ~ ")" }
+
+UnaryLOp = { "-" | "+" | "!" }
+
+UnaryROp = { "!" | "--" | "++" }
+
+Operator = { "+" | "-" | ("**") | ("//") | "*" | "/" | "%" | "^" | "==" | "<=" | ">=" | "<" | ">" }
+
+Term = { Range | Literal | "(" ~ Expr ~ ")" | (Call ~ !"|") | Pipe | Var  }
+
+Pipe = { Capture? ~ Call ~ ( "|" ~ Call)* }
+
+Capture = { "$" }
+
+Range = { (Int | Var) ~ ".." ~ (Int | Var) }
+
+Call = { Ident ~ "(" ~ Arguments? ~ ")" }
+
+Arguments = _{ "\n"? ~ Expr ~ ( "," ~ "\n"* ~ Expr)* ~ "\n"? }
+
+Literal = { Float | Int | String | Bool | None | Array | Dict | Function }
+
+Home = { "~" }
+
+Function = { "(" ~ FunctionParams? ~ ")" ~ "->" ~ WrappedBlock }
+
+FunctionParams = { FunctionParam ~ ("," ~ FunctionParam)* }
+
+FunctionParam = { Ident ~ OptionalMarker? }
+
+OptionalMarker = _{ "=" ~ (Literal | Var)}
+
+Dict = { "{" ~ "\n"? ~ Pairs?  ~ "\n"? ~ "}" }
+
+Pairs = _{ Pair ~ ("," ~ "\n"* ~ Pair)* }
+
+Pair = { (Ident | String) ~ ":" ~ Expr }
+
+Array = { "[" ~ Arguments? ~ "]"}
+
+Int = @{ ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* | "0" }
+
+Float = @{ Int? ~ "." ~ ASCII_DIGIT+ }
+
+Bool = @{ "false" | "true" }
+
+None = @{ "none" }
+
+Ident = @{ "$"? ~ ASCII_ALPHA ~ ( ASCII_ALPHANUMERIC | "_" | "::" ~ !"::")* }
+
+String = ${ "\"" ~ StringContent ~ "\""}
+
+StringContent = _{ Home? ~ ( Interpolation | Escape | Text)* }
+
+Escape = { "\\" ~ (("x" ~ ASCII_HEX_DIGIT{1,4}) | ANY) }
+
+Text = { (!("\"" | Interpolation | Escape) ~ ANY)+ }
+
+Interpolation = { "${" ~ Expr ~"}"}
+
+WHITESPACE = _{ " " | "\t" | "\\\n" }
+
+LineComment = { "#" ~ (!Divider ~ ANY)* }
+
+Divider = _{ "\n" | ";" | EOI }

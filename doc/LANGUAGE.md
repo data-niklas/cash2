@@ -148,3 +148,7 @@
 	- `echo("asd / params") | lolcat()`
 	- `a = $(echo("Hello ") | lolcat("asd")) + "world"`
 	-  Captured via `$()`
+
+Env vars:
+	- `$IDENT`
+	- e.g.: `$HOME`
