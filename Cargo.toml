@@ -1,9 +1,6 @@
-[package]
-name = "cash2"
-version = "0.1.0"
-authors = ["Niklas Loeser <51879435+data-niklas@users.noreply.github.com>"]
-edition = "2018"
+[workspace]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+members = [
+    "backend",
+    "testing_frontend"
+]
