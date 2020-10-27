@@ -1,99 +1,60 @@
-Block = { Statement ~ (Divider ~ "\n"* ~ Statement)* }
+Block = { Statement ~ (Divider ~ NewLines ~ Statement)* }
+Divider = _{ "\n" | ";" | EOI }
+NewLines = _{ "\n"* }
 
-WrappedBlock = _{ "{" ~ "\n"? ~ Block ~ "\n"? ~ "}"}
-
-Statement = { Async? ~ (WhileLoop | ForLoop | Conditional | WrappedBlock | Assignment | Expr | LineComment) }
-
-Async = { "async" }
-
-Assignment = { Ident ~ GetIndex? ~ (ImplizitAssignmentOp | (ExplizitAssignmentOp ~ Expr)) }
-
-ForLoop = { "for" ~ Ident ~ "in" ~ Expr ~ WrappedBlock}
-
-WhileLoop = { "while" ~ Expr ~ WrappedBlock}
-
+WrappedBlock = _{ "{" ~ NewLines ~ Block ~ NewLines ~ "}"}
+Statement = { WhileLoop | ForLoop | Conditional | WrappedBlock | Assignment | Capture | Expr }
+Assignment = { Ident ~ Indexing* ~ Infix? ~ "=" ~ Expr }
+ForLoop = { "for" ~ Ident ~ "in" ~ Expr ~ WrappedBlock }
+WhileLoop = { "while" ~ Expr ~ WrappedBlock }
 Conditional = {If ~ Elif* ~ Else?}
-
 If = _{ "if" ~ Expr ~ WrappedBlock }
-
 Elif = _{ "elif" ~ Expr ~ WrappedBlock }
-
 Else = _{ "else" ~ WrappedBlock }
 
-Var = { Ident }
+Expr = { Prefix* ~ Primary ~ Postfix* ~ (Infix ~ Prefix* ~ Primary ~ Postfix*)* }
+Primary = { Literal | Paren | Capture }
+Pipe = { PipeCall ~ ( "|" ~ PipeCall)* }
+PipeCall = { Ident ~ FunctionCall}
+Capture = { "$" ~ Pipe }
+Literal = { Range | Float | Int | String | Bool | Array | Dict | Function }
+Paren = _{ "(" ~ Expr ~ ")" }
 
-Expr = { UnaryExpr ~ (Operator ~ UnaryExpr)* }
+Infix = { "+" | "-" | "*" | "/" | "%" | "**" | "!=" | "==" | "<=" | ">=" | "<" | ">" | "&" | "|" | "^" | "in" | "<<" | ">>" }
+Prefix = { "+" | "-" | "!" | "await" | "async" }
+Postfix = { FunctionCall | Indexing }
 
-UnaryExpr = { UnaryLOp ~ Term | Term ~ UnaryROp | Term ~ GetIndex | Term ~ ChainedCall | Term }
-
-ImplizitAssignmentOp = { "++" | "--"}
-
-ExplizitAssignmentOp = { "=" | "*=" | "/=" | "+=" | "-=" }
-
-GetIndex = { "[" ~ Expr ~ "]" }
-
-ChainedCall = { "(" ~ Arguments? ~ ")" }
-
-UnaryLOp = { "-" | "+" | "!" }
-
-UnaryROp = { "!" | "--" | "++" }
-
-Operator = { "+" | "-" | ("**") | ("//") | "*" | "/" | "%" | "^" | "==" | "<=" | ">=" | "<" | ">" }
-
-Term = { Range | Literal | "(" ~ Expr ~ ")" | (Call ~ !"|") | Pipe | Var  }
-
-Pipe = { Capture? ~ Call ~ ( "|" ~ Call)* }
-
-Capture = { "$" }
-
-Range = { (Int | Var) ~ ".." ~ (Int | Var) }
-
-Call = { Ident ~ "(" ~ Arguments? ~ ")" }
-
-Arguments = _{ "\n"? ~ Expr ~ ( "," ~ "\n"* ~ Expr)* ~ "\n"? }
-
-Literal = { Float | Int | String | Bool | None | Array | Dict | Function }
-
-Home = { "~" }
+FunctionCall = { "(" ~ Arguments? ~ ")"}
+Indexing = { ("[" ~ Expr ~ "]") | ("::" ~ Ident) }
+Arguments = _{ NewLines ~ Expr ~ ( "," ~ NewLines ~ Expr)* ~ NewLines }
 
 Function = { "(" ~ FunctionParams? ~ ")" ~ "->" ~ WrappedBlock }
-
-FunctionParams = { FunctionParam ~ ("," ~ FunctionParam)* }
-
+FunctionParams = { FunctionParam ~ ("," ~ NewLines ~ FunctionParam)* }
 FunctionParam = { Ident ~ OptionalMarker? }
+OptionalMarker = _{ "=" ~ (Literal | Ident)}
 
-OptionalMarker = _{ "=" ~ (Literal | Var)}
-
-Dict = { "{" ~ "\n"? ~ Pairs?  ~ "\n"? ~ "}" }
-
-Pairs = _{ Pair ~ ("," ~ "\n"* ~ Pair)* }
-
+Dict = { "{" ~ NewLines ~ Pairs?  ~ NewLines ~ "}" }
+Pairs = _{ Pair ~ ("," ~ NewLines ~ Pair)* }
 Pair = { (Ident | String) ~ ":" ~ Expr }
 
 Array = { "[" ~ Arguments? ~ "]"}
-
-Int = @{ ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* | "0" }
-
-Float = @{ Int? ~ "." ~ ASCII_DIGIT+ }
-
+Int = @{ ("0x" | "0b" | "0o")? ~ DecInt }
+DecInt = @{ ASCII_NONZERO_DIGIT ~ ( "_"? ~ ASCII_DIGIT)* | "0" }
+Float = @{ DecInt? ~ (("." ~ ( "_"? ~ ASCII_DIGIT)+ ~ ( "e" ~ DecInt)?) | "e" ~ DecInt) }
 Bool = @{ "false" | "true" }
+Ident = @{ "$"? ~ ASCII_ALPHA ~ ( ASCII_ALPHANUMERIC | "_")* }
+Range = @{ (Int | Ident) ~ ".." ~ (Int | Ident) }
 
-None = @{ "none" }
 
-Ident = @{ "$"? ~ ASCII_ALPHA ~ ( ASCII_ALPHANUMERIC | "_" | "::" ~ !"::")* }
-
-String = ${ "\"" ~ StringContent ~ "\""}
-
-StringContent = _{ Home? ~ ( Interpolation | Escape | Text)* }
-
+String = ${ ("\"" ~ DoubleQuoteContent ~ "\"") | ("'" ~ SingleQuoteContent ~ "'")}
+DoubleQuoteContent = _{ Home? ~ ( Interpolation | Escape | DoubleQuoteText)* }
+SingleQuoteContent = _{ (Escape | SingleQuoteText)* }
+Interpolation = { "${" ~ Expr ~ "}"}
+Home = @{ "~" }
 Escape = { "\\" ~ (("x" ~ ASCII_HEX_DIGIT{1,4}) | ANY) }
+DoubleQuoteText = { (!("\"" | Interpolation | Escape) ~ ANY)+ }
+SingleQuoteText = {  (!("\'" | Escape) ~ ANY)+}
 
-Text = { (!("\"" | Interpolation | Escape) ~ ANY)+ }
-
-Interpolation = { "${" ~ Expr ~"}"}
-
-WHITESPACE = _{ " " | "\t" | "\\\n" }
-
-LineComment = { "#" ~ (!Divider ~ ANY)* }
-
-Divider = _{ "\n" | ";" | EOI }
+LineComment = @{ "#" ~ (!"\n" ~ ANY)* }
+WHITESPACE = _{ " " | "\t" }
+COMMENT = _{ ("/*" ~ (!"*/" ~ ANY)* ~ "*/") | LineComment }

@@ -138,16 +138,16 @@
 	
 	- Multiline comments:
 		```
-		## some long comment
+		/* some long comment
 			which ends 
 			somewhere else
-			##
+			*/
 		```
 
 - Piping:
 	- `echo("asd / params") | lolcat()`
-	- `a = $(echo("Hello ") | lolcat("asd")) + "world"`
-	-  Captured via `$()`
+	- `a = $ echo("Hello ") | lolcat("asd") + "world"`
+	-  Captured via `$`
 
 Env vars:
 	- `$IDENT`
