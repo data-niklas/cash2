@@ -1,11 +1,12 @@
+use downcast_rs::*;
 use std::error::Error;
 
 pub type ValueResult = Result<Box<dyn Value>, Box<dyn Error>>;
 
-pub trait Value: std::string::ToString {
+pub trait Value: Downcast + std::fmt::Display {
     fn get_type_name(&self) -> &'static str;
-    fn index(&self, index: usize) -> ValueResult; 
-    fn call(&self, params: Vec<Box<dyn Value>>) -> ValueResult; 
+    fn index(&self, index: usize) -> ValueResult;
+    fn call(&self, params: Vec<Box<dyn Value>>) -> ValueResult;
     fn not(&self) -> ValueResult;
     fn uplus(&self) -> ValueResult;
     fn uminus(&self) -> ValueResult;
@@ -30,3 +31,4 @@ pub trait Value: std::string::ToString {
     fn or(&self, value: Box<dyn Value>) -> ValueResult;
     fn r#async(&self) -> ValueResult;
 }
+impl_downcast!(Value);
