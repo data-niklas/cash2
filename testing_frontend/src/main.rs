@@ -5,14 +5,13 @@ fn main() {
     let future = secret(); // Nothing is printed
     let task = smol::spawn(future);
     task.detach();
-    println!("{}", smol::spawn(future)) 
+    println!("{}", smol::spawn(future))
 }
 
-async fn secret() -> usize{
+async fn secret() -> usize {
     return secret2().await;
 }
 
-async fn secret2() -> usize{
+async fn secret2() -> usize {
     return 42;
 }
-

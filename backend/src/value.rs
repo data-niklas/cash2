@@ -1,4 +1,4 @@
-use downcast_rs::*;
+use downcast_rs::{impl_downcast, Downcast};
 use std::error::Error;
 
 pub type ValueResult = Result<Box<dyn Value>, Box<dyn Error>>;
