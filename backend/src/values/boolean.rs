@@ -1,5 +1,5 @@
-use crate::value::{ValueResult, Value};
 use crate::error::CashError;
+use crate::value::{Value, ValueResult};
 
 #[derive(Debug)]
 pub struct BooleanValue {

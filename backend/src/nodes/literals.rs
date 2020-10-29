@@ -1,7 +1,7 @@
 use crate::ast::Node;
 use crate::context::Context;
 use crate::value::Value;
-use crate::values::{BooleanValue, IntegerValue};
+use crate::values::{BooleanValue, FloatValue, IntegerValue};
 use std::sync::{Arc, RwLock};
 
 #[derive(Clone, Debug)]
@@ -30,21 +30,22 @@ pub struct IntegerLiteral {
 
 impl IntegerLiteral {
     pub fn parse_str(text: &str) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
+        let text = text.replace("_", "");
         Ok(Box::new(if text.starts_with("0x") {
-            IntegerLiteral{
-                value: i64::from_str_radix(&text[2..], 16)?
+            IntegerLiteral {
+                value: i64::from_str_radix(&text[2..], 16)?,
             }
         } else if text.starts_with("0o") {
-            IntegerLiteral{
-                value: i64::from_str_radix(&text[2..], 8)?
+            IntegerLiteral {
+                value: i64::from_str_radix(&text[2..], 8)?,
             }
         } else if text.starts_with("0b") {
-            IntegerLiteral{
-                value: i64::from_str_radix(&text[2..], 2)?
+            IntegerLiteral {
+                value: i64::from_str_radix(&text[2..], 2)?,
             }
         } else {
-            IntegerLiteral{
-                value: text.parse::<i64>()?
+            IntegerLiteral {
+                value: text.parse::<i64>()?,
             }
         }))
     }
@@ -61,5 +62,32 @@ impl Node for IntegerLiteral {
 impl std::fmt::Display for IntegerLiteral {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "IntegerLiteral '{}'", self.value)
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct FloatLiteral {
+    value: f64,
+}
+
+impl Node for FloatLiteral {
+    fn eval(
+        &self,
+        _ctx: Arc<RwLock<Context>>,
+    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+        FloatValue::boxed(self.value)
+    }
+}
+impl std::fmt::Display for FloatLiteral {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "FloatLiteral '{}'", self.value)
+    }
+}
+
+
+impl FloatLiteral {
+    pub fn parse_str(text: &str) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
+        let text = text.replace("_", "");
+        Ok(Box::new(FloatLiteral{value: text.parse::<f64>()?}))
     }
 }

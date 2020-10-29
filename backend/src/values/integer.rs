@@ -1,10 +1,10 @@
 use crate::error::CashError;
 use crate::value::{Value, ValueResult};
-use crate::values::BooleanValue;
+use crate::values::{BooleanValue, FloatValue};
 
 #[derive(Debug)]
 pub struct IntegerValue {
-    value: i64,
+    pub value: i64,
 }
 
 impl IntegerValue {
@@ -25,12 +25,14 @@ impl Value for IntegerValue {
     }
     fn power(&self, value: Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
-        if let Ok(other) = value.downcast::<IntegerValue>() {
+        if let Some(other) = value.downcast_ref::<IntegerValue>() {
             if other.value < 0 {
-                unimplemented!();
+                FloatValue::boxed((self.value as f64).powi(other.value as i32))
             } else {
                 IntegerValue::boxed(self.value.pow(other.value as u32))
             }
+        } else if let Some(other) = value.downcast_ref::<FloatValue>() {
+            FloatValue::boxed((self.value as f64).powf(other.value))
         } else {
             //TODO FLOATS; ...
             CashError::InvalidOperation("power".to_owned(), "integer ".to_owned() + typename)
@@ -39,10 +41,11 @@ impl Value for IntegerValue {
     }
     fn multiply(&self, value: Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
-        if let Ok(other) = value.downcast::<IntegerValue>() {
+        if let Some(other) = value.downcast_ref::<IntegerValue>() {
             IntegerValue::boxed(self.value * other.value)
+        } else if let Some(other) = value.downcast_ref::<FloatValue>() {
+            FloatValue::boxed((self.value as f64) * other.value)
         } else {
-            //TODO FLOATS; ...
             CashError::InvalidOperation(
                 "multiplication".to_owned(),
                 "integer ".to_owned() + typename,
@@ -52,19 +55,21 @@ impl Value for IntegerValue {
     }
     fn division(&self, value: Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
-        if let Ok(other) = value.downcast::<IntegerValue>() {
-            unimplemented!();
-        //FloatValue::boxed(self.value / other.value)
+        if let Some(other) = value.downcast_ref::<IntegerValue>() {
+            FloatValue::boxed(self.value as f64 / other.value as f64)
+        } else if let Some(other) = value.downcast_ref::<FloatValue>() {
+            FloatValue::boxed((self.value as f64) / other.value)
         } else {
-            //TODO FLOATS; ...
             CashError::InvalidOperation("division".to_owned(), "integer ".to_owned() + typename)
                 .boxed()
         }
     }
     fn modulo(&self, value: Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
-        if let Ok(other) = value.downcast::<IntegerValue>() {
+        if let Some(other) = value.downcast_ref::<IntegerValue>() {
             IntegerValue::boxed(self.value % other.value)
+        } else if let Some(other) = value.downcast_ref::<FloatValue>() {
+            FloatValue::boxed((self.value as f64) % other.value)
         } else {
             CashError::InvalidOperation("modulo".to_owned(), "integer ".to_owned() + typename)
                 .boxed()
@@ -72,19 +77,21 @@ impl Value for IntegerValue {
     }
     fn add(&self, value: Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
-        if let Ok(other) = value.downcast::<IntegerValue>() {
+        if let Some(other) = value.downcast_ref::<IntegerValue>() {
             IntegerValue::boxed(self.value + other.value)
+        } else if let Some(other) = value.downcast_ref::<FloatValue>() {
+            FloatValue::boxed((self.value as f64) + other.value)
         } else {
-            //TODO FLOATS, ...
             CashError::InvalidOperation("add".to_owned(), "integer ".to_owned() + typename).boxed()
         }
     }
     fn subtract(&self, value: Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
-        if let Ok(other) = value.downcast::<IntegerValue>() {
+        if let Some(other) = value.downcast_ref::<IntegerValue>() {
             IntegerValue::boxed(self.value - other.value)
+        } else if let Some(other) = value.downcast_ref::<FloatValue>() {
+            FloatValue::boxed((self.value as f64) - other.value)
         } else {
-            //TODO FLOATS, ...
             CashError::InvalidOperation("subtract".to_owned(), "integer ".to_owned() + typename)
                 .boxed()
         }
@@ -115,30 +122,33 @@ impl Value for IntegerValue {
     }
     fn lt(&self, value: Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
-        if let Ok(other) = value.downcast::<IntegerValue>() {
+        if let Some(other) = value.downcast_ref::<IntegerValue>() {
             BooleanValue::boxed(self.value < other.value)
+        } else if let Some(other) = value.downcast_ref::<FloatValue>() {
+            BooleanValue::boxed((self.value as f64) < other.value)
         } else {
-            //TODO floats
             CashError::InvalidOperation("less than".to_owned(), "integer ".to_owned() + typename)
                 .boxed()
         }
     }
     fn gt(&self, value: Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
-        if let Ok(other) = value.downcast::<IntegerValue>() {
+        if let Some(other) = value.downcast_ref::<IntegerValue>() {
             BooleanValue::boxed(self.value > other.value)
+        } else if let Some(other) = value.downcast_ref::<FloatValue>() {
+            BooleanValue::boxed((self.value as f64) > other.value)
         } else {
-            //TODO floats
             CashError::InvalidOperation("greater than".to_owned(), "integer ".to_owned() + typename)
                 .boxed()
         }
     }
     fn lte(&self, value: Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
-        if let Ok(other) = value.downcast::<IntegerValue>() {
+        if let Some(other) = value.downcast_ref::<IntegerValue>() {
             BooleanValue::boxed(self.value <= other.value)
+        } else if let Some(other) = value.downcast_ref::<FloatValue>() {
+            BooleanValue::boxed((self.value as f64) <= other.value)
         } else {
-            //TODO floats
             CashError::InvalidOperation(
                 "less / equal than".to_owned(),
                 "integer ".to_owned() + typename,
@@ -148,10 +158,11 @@ impl Value for IntegerValue {
     }
     fn gte(&self, value: Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
-        if let Ok(other) = value.downcast::<IntegerValue>() {
+        if let Some(other) = value.downcast_ref::<IntegerValue>() {
             BooleanValue::boxed(self.value >= other.value)
+        } else if let Some(other) = value.downcast_ref::<FloatValue>() {
+            BooleanValue::boxed((self.value as f64) >= other.value)
         } else {
-            //TODO floats
             CashError::InvalidOperation(
                 "greater / equal than".to_owned(),
                 "integer ".to_owned() + typename,
@@ -161,10 +172,11 @@ impl Value for IntegerValue {
     }
     fn eq(&self, value: Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
-        if let Ok(other) = value.downcast::<IntegerValue>() {
+        if let Some(other) = value.downcast_ref::<IntegerValue>() {
             BooleanValue::boxed(self.value == other.value)
+        } else if let Some(other) = value.downcast_ref::<FloatValue>() {
+            BooleanValue::boxed(((self.value as f64) - other.value).abs() < super::float::EPSILON)
         } else {
-            //TODO floats
             CashError::InvalidOperation("equality".to_owned(), "integer ".to_owned() + typename)
                 .boxed()
         }

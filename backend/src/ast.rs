@@ -6,7 +6,7 @@ use crate::rules::Rule;
 use crate::value::Value;
 use pest::iterators::{Pair, Pairs};
 
-pub trait Node: std::fmt::Display+std::fmt::Debug {
+pub trait Node: std::fmt::Display + std::fmt::Debug {
     fn eval(&self, ctx: Arc<RwLock<Context>>)
         -> Result<Box<dyn Value>, Box<dyn std::error::Error>>;
 }
@@ -17,6 +17,7 @@ pub fn make_ast(root: Pair<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::E
             value: root.as_span().as_str().parse::<bool>()?,
         })),
         Rule::Int => IntegerLiteral::parse_str(root.as_span().as_str()),
+        Rule::Float => FloatLiteral::parse_str(root.as_span().as_str()),
         _ => {
             unimplemented!();
         }
