@@ -59,6 +59,8 @@
 		- left < right
 		- Create
 			- `integer..integer`
+		- +/- moves the range
+		- *//: scale (lower stays the same)
 			
 	- *Enum?*
 	- Function

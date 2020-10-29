@@ -25,7 +25,7 @@ impl Runtime {
     }
 
     pub fn interpret(&mut self, text: String) {
-        let parse_result = rules::Language::parse(rules::Rule::Float, &text.trim());
+        let parse_result = rules::Language::parse(rules::Rule::Range, &text.trim());
         if parse_result.is_err() {
             println!("Error occured while parsing input: {:?}", parse_result);
             return;
@@ -40,7 +40,12 @@ impl Runtime {
         let root_span = root_node.as_span();
         if root_span.start() != 0 || root_span.end() != text.len() {
             println!("Error occured while parsing input: Not all of the input was consumed");
-            println!("Consumed from {} to {}: {}", root_span.start(), root_span.end(), root_span.as_str());
+            println!(
+                "Consumed from {} to {}: {}",
+                root_span.start(),
+                root_span.end(),
+                root_span.as_str()
+            );
             return;
         }
         let tree_result = ast::make_ast(root_node);
@@ -63,6 +68,6 @@ mod tests {
     fn simple() {
         let mut runtime = Runtime::new();
         //runtime.interpret("$ echo('asd')".to_owned());
-        runtime.interpret("0.1___2_e3".to_owned());
+        runtime.interpret("1__2_____4..0xaaa".to_owned());
     }
 }

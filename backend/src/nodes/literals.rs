@@ -1,7 +1,10 @@
-use crate::ast::Node;
+use crate::ast::*;
 use crate::context::Context;
+use crate::error::CashError;
+use crate::rules::Rule;
 use crate::value::Value;
-use crate::values::{BooleanValue, FloatValue, IntegerValue};
+use crate::values::*;
+use pest::iterators::{Pair, Pairs};
 use std::sync::{Arc, RwLock};
 
 #[derive(Clone, Debug)]
@@ -84,10 +87,50 @@ impl std::fmt::Display for FloatLiteral {
     }
 }
 
-
 impl FloatLiteral {
     pub fn parse_str(text: &str) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
         let text = text.replace("_", "");
-        Ok(Box::new(FloatLiteral{value: text.parse::<f64>()?}))
+        Ok(Box::new(FloatLiteral {
+            value: text.parse::<f64>()?,
+        }))
+    }
+}
+
+#[derive(Debug)]
+pub struct RangeLiteral {
+    lower: Box<dyn Node>,
+    upper: Box<dyn Node>,
+}
+
+impl Node for RangeLiteral {
+    fn eval(
+        &self,
+        ctx: Arc<RwLock<Context>>,
+    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+        let lower = self.lower.eval(ctx.clone())?;
+        let lower = lower.downcast_ref::<IntegerValue>();
+        let upper = self.upper.eval(ctx)?;
+        let upper = upper.downcast_ref::<IntegerValue>();
+        if let (Some(lower), Some(upper)) = (lower, upper) {
+            RangeValue::boxed(lower.value, upper.value)
+        } else {
+            CashError::InvalidType("unknown".to_owned(), "range".to_owned()).boxed()
+        }
+    }
+}
+impl std::fmt::Display for RangeLiteral {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "RangeLiteral '{}'..'{}'", self.lower, self.upper)
+    }
+}
+
+impl RangeLiteral {
+    pub fn parse_inner(mut pair: Pairs<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
+        let lower_node = pair.next().expect("Could not happen - grammar!");
+        let upper_node = pair.next().expect("Could not happen - grammar!");
+        let lower = make_ast(lower_node)?;
+        let upper = make_ast(upper_node)?;
+
+        Ok(Box::new(RangeLiteral { lower, upper }))
     }
 }

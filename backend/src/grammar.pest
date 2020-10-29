@@ -46,7 +46,7 @@ BinInt = @{ ASCII_BIN_DIGIT ~ ( "_"* ~ ASCII_BIN_DIGIT)* }
 Float = @{ DecInt? ~ (("." ~ DecInt ~ "_"* ~ ( "e" ~ DecInt)?) | "e" ~ DecInt) }
 Bool = @{ "false" | "true" }
 Ident = @{ "$"? ~ ASCII_ALPHA ~ ( ASCII_ALPHANUMERIC | "_")* }
-Range = @{ (Int | Ident) ~ ".." ~ (Int | Ident) }
+Range = { (Int | Ident) ~ ".." ~ (Int | Ident) }
 
 
 String = ${ ("\"" ~ DoubleQuoteContent ~ "\"") | ("'" ~ SingleQuoteContent ~ "'")}
