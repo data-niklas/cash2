@@ -38,8 +38,11 @@ Pairs = _{ Pair ~ ("," ~ NewLines ~ Pair)* }
 Pair = { (Ident | String) ~ ":" ~ Expr }
 
 Array = { "[" ~ Arguments? ~ "]"}
-Int = @{ ("0x" | "0b" | "0o")? ~ DecInt }
-DecInt = @{ ASCII_NONZERO_DIGIT ~ ( "_"? ~ ASCII_DIGIT)* | "0" }
+Int = @{ "0x" ~ HexInt | "0b" ~ BinInt | "0o" ~ OctInt  | DecInt }
+DecInt = @{ ASCII_DIGIT ~ ( "_"? ~ ASCII_DIGIT)* }
+HexInt = @{ ASCII_HEX_DIGIT ~ ( "_"? ~ ASCII_HEX_DIGIT)* }
+OctInt = @{ ASCII_OCT_DIGIT ~ ( "_"? ~ ASCII_OCT_DIGIT)* }
+BinInt = @{ ASCII_BIN_DIGIT ~ ( "_"? ~ ASCII_BIN_DIGIT)* }
 Float = @{ DecInt? ~ (("." ~ ( "_"? ~ ASCII_DIGIT)+ ~ ( "e" ~ DecInt)?) | "e" ~ DecInt) }
 Bool = @{ "false" | "true" }
 Ident = @{ "$"? ~ ASCII_ALPHA ~ ( ASCII_ALPHANUMERIC | "_")* }

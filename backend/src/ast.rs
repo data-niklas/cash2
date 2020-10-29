@@ -16,6 +16,7 @@ pub fn make_ast(root: Pair<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::E
         Rule::Bool => Ok(Box::new(BooleanLiteral {
             value: root.as_span().as_str().parse::<bool>()?,
         })),
+        Rule::Int => IntegerLiteral::parse_str(root.as_span().as_str()),
         _ => {
             unimplemented!();
         }
