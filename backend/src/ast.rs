@@ -6,7 +6,7 @@ use crate::rules::Rule;
 use crate::value::Value;
 use pest::iterators::{Pair, Pairs};
 
-pub trait Node: ToString {
+pub trait Node: std::fmt::Display+std::fmt::Debug {
     fn eval(&self, ctx: Arc<RwLock<Context>>)
         -> Result<Box<dyn Value>, Box<dyn std::error::Error>>;
 }

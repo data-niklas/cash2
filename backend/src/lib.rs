@@ -25,14 +25,30 @@ impl Runtime {
     }
 
     pub fn interpret(&mut self, text: String) {
-        let mut parse_tree =
-            rules::Language::parse(rules::Rule::Int, &text.trim()).expect("Could not create parse tree");
-        let root_node = parse_tree.next().unwrap();
+        let parse_result =
+            rules::Language::parse(rules::Rule::Int, &text.trim());
+        if parse_result.is_err() {
+            println!("Error occured while parsing input: {:?}", parse_result);
+            return;
+        }
+        let mut parse_tree = parse_result.expect("Cannot happen: tested by if");
+        let mut root_nodes = parse_tree.collect::<Vec<_>>();
+        if root_nodes.len() != 1 {
+            println!("Error occured while parsing input: Not exactly one root node");
+            return;
+        }
+        let root_node = root_nodes.remove(0);
         let root_span = root_node.as_span();
         if root_span.start() != 0 || root_span.end() != text.len(){
-            println!("ERROR OCCURED");
+            println!("Error occured while parsing input: Not all of the input was consumed");
+            return;
         }
-        let tree = ast::make_ast(root_node).expect("Could not create ast");
+        let tree_result = ast::make_ast(root_node);
+        if tree_result.is_err() {
+            println!("Error occured while parsing input: {:?}", tree_result);
+            return;
+        }
+        let tree = tree_result.expect("Cannot happen: tested by if");
         println!(
             "{}",
             tree.eval(self.ctx.clone()).expect("Could not eval value")

@@ -17,23 +17,11 @@ impl Value for IntegerValue {
     fn get_type_name(&self) -> &'static str {
         "integer"
     }
-    fn index(&self, _: usize) -> ValueResult {
-        CashError::InvalidOperation("indexing".to_owned(), self.get_type_name().to_owned()).boxed()
-    }
-    fn call(&self, _: Vec<Box<dyn Value>>) -> ValueResult {
-        CashError::InvalidOperation("calling".to_owned(), self.get_type_name().to_owned()).boxed()
-    }
-    fn not(&self) -> ValueResult {
-        CashError::InvalidOperation("not".to_owned(), self.get_type_name().to_owned()).boxed()
-    }
     fn uplus(&self) -> ValueResult {
         IntegerValue::boxed(self.value)
     }
     fn uminus(&self) -> ValueResult {
         IntegerValue::boxed(-self.value)
-    }
-    fn r#await(&self) -> ValueResult {
-        CashError::InvalidOperation("await".to_owned(), self.get_type_name().to_owned()).boxed()
     }
     fn power(&self, value: Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
@@ -124,9 +112,6 @@ impl Value for IntegerValue {
             )
             .boxed()
         }
-    }
-    fn contains(&self, _: Box<dyn Value>) -> ValueResult {
-        CashError::InvalidOperation("contains".to_owned(), self.get_type_name().to_owned()).boxed()
     }
     fn lt(&self, value: Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
