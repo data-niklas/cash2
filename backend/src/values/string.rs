@@ -2,7 +2,7 @@ use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, IntegerValue, RangeValue};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StringValue {
     pub value: String,
 }
@@ -14,6 +14,9 @@ impl StringValue {
 }
 
 impl Value for StringValue {
+    fn clone(&self) -> Box<dyn Value> {
+        Box::new(std::clone::Clone::clone(self))
+    }
     fn get_type_name(&self) -> &'static str {
         "string"
     }

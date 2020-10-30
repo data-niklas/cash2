@@ -1,9 +1,9 @@
 use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BooleanValue {
-    value: bool,
+    pub value: bool,
 }
 
 impl BooleanValue {
@@ -13,6 +13,9 @@ impl BooleanValue {
 }
 
 impl Value for BooleanValue {
+    fn clone(&self) -> Box<dyn Value> {
+        Box::new(std::clone::Clone::clone(self))
+    }
     fn get_type_name(&self) -> &'static str {
         "boolean"
     }

@@ -137,6 +137,45 @@ impl RangeLiteral {
 }
 
 #[derive(Debug)]
+pub struct ListLiteral {
+    vals: Vec<Box<dyn Node>>,
+}
+
+impl Node for ListLiteral {
+    fn eval(
+        &self,
+        ctx: Arc<RwLock<Context>>,
+    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+        let mut v: Vec<Box<dyn Value>> = Vec::with_capacity(self.vals.len());
+        for val in &self.vals {
+            v.push((*val).eval(ctx.clone())?);
+        }
+        ListValue::boxed(v)
+    }
+}
+
+impl std::fmt::Display for ListLiteral {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = String::from("ListLiteral [");
+        for value in &self.vals {
+            s.push_str(&format!("{} ", value));
+        }
+        s.push_str("]");
+        write!(f, "{}", s)
+    }
+}
+
+impl ListLiteral {
+    pub fn parse_inner(pair: Pairs<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
+        let mut vals = Vec::new();
+        for node in pair {
+            vals.push(make_ast(node)?);
+        }
+        Ok(Box::new(ListLiteral { vals }))
+    }
+}
+
+#[derive(Debug)]
 pub struct StringLiteral {
     strings: Vec<String>,
     interpolations: Vec<Box<dyn Node>>,

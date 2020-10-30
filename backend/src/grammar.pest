@@ -17,7 +17,7 @@ Primary = { Literal | Paren | Capture }
 Pipe = { PipeCall ~ ( "|" ~ PipeCall)* }
 PipeCall = { Ident ~ FunctionCall}
 Capture = { "$" ~ Pipe }
-Literal = { Range | Float | Int | String | Bool | Array | Dict | Function }
+Literal = { Range | Float | Int | String | Bool | List | Dict | Function }
 Paren = _{ "(" ~ Expr ~ ")" }
 
 Infix = { "+" | "-" | "*" | "/" | "%" | "**" | "!=" | "==" | "<=" | ">=" | "<" | ">" | "&" | "|" | "^" | "in" | "<<" | ">>" }
@@ -37,7 +37,7 @@ Dict = { "{" ~ NewLines ~ Pairs?  ~ NewLines ~ "}" }
 Pairs = _{ Pair ~ ("," ~ NewLines ~ Pair)* }
 Pair = { (Ident | String) ~ ":" ~ Expr }
 
-Array = { "[" ~ Arguments? ~ "]"}
+List = { "[" ~ Arguments? ~ "]"}
 Int = @{ "0x" ~ HexInt | "0b" ~ BinInt | "0o" ~ OctInt  | DecInt }
 DecInt = @{ ASCII_DIGIT ~ ( "_"* ~ ASCII_DIGIT)* }
 HexInt = @{ ASCII_HEX_DIGIT ~ ( "_"* ~ ASCII_HEX_DIGIT)* }

@@ -2,7 +2,7 @@ use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, FloatValue, IntegerValue};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RangeValue {
     pub lower: i64,
     pub upper: i64,
@@ -20,6 +20,9 @@ impl RangeValue {
 }
 
 impl Value for RangeValue {
+    fn clone(&self) -> Box<dyn Value> {
+        Box::new(std::clone::Clone::clone(self))
+    }
     fn get_type_name(&self) -> &'static str {
         "range"
     }

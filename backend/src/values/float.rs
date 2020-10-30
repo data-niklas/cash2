@@ -4,7 +4,7 @@ use crate::values::{BooleanValue, IntegerValue};
 
 pub static EPSILON: f64 = 1e-15f64;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FloatValue {
     pub value: f64,
 }
@@ -16,6 +16,9 @@ impl FloatValue {
 }
 
 impl Value for FloatValue {
+    fn clone(&self) -> Box<dyn Value> {
+        Box::new(std::clone::Clone::clone(self))
+    }
     fn get_type_name(&self) -> &'static str {
         "float"
     }

@@ -22,6 +22,7 @@ pub fn make_ast(root: Pair<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::E
         Rule::Float => FloatLiteral::parse_str(root.as_span().as_str()),
         Rule::Range => RangeLiteral::parse_inner(root.into_inner()),
         Rule::String => StringLiteral::parse_inner(root.into_inner()),
+        Rule::List => ListLiteral::parse_inner(root.into_inner()),
         _ => {
             unimplemented!();
         }

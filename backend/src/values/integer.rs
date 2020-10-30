@@ -2,7 +2,7 @@ use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, FloatValue};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IntegerValue {
     pub value: i64,
 }
@@ -14,6 +14,9 @@ impl IntegerValue {
 }
 
 impl Value for IntegerValue {
+    fn clone(&self) -> Box<dyn Value> {
+        Box::new(std::clone::Clone::clone(self))
+    }
     fn get_type_name(&self) -> &'static str {
         "integer"
     }

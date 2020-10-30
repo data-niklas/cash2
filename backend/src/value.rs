@@ -4,7 +4,7 @@ use std::error::Error;
 
 pub type ValueResult = Result<Box<dyn Value>, Box<dyn Error>>;
 
-pub trait Value: Downcast + std::fmt::Display {
+pub trait Value: Downcast + std::fmt::Display + std::fmt::Debug {
     fn get_type_name(&self) -> &'static str;
     fn index(&self, _index: Box<dyn Value>) -> ValueResult {
         CashError::InvalidOperation("indexing".to_owned(), self.get_type_name().to_owned()).boxed()
@@ -101,5 +101,7 @@ pub trait Value: Downcast + std::fmt::Display {
     fn r#async(&self) -> ValueResult {
         CashError::InvalidOperation("async".to_owned(), self.get_type_name().to_owned()).boxed()
     }
+    fn clone(&self) -> Box<dyn Value>;
 }
+
 impl_downcast!(Value);
