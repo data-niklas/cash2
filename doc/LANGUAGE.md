@@ -5,7 +5,7 @@
 - Datatypes:
 	- String
 		- first char may be a `'~'` and will be replaced by the home dir
-		- (can be escaped via `"\\~I really needed that char"`)
+		- (can be escaped via `"\~I really needed that char"`)
 		- `"sometext"`
 		- `sometext'`
 		- interpolation via `${}` 
