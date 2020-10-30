@@ -8,6 +8,10 @@ pub enum CashError {
     InvalidLength(i64, String),
     #[error("invalid type '{0}' for '{1}'")]
     InvalidType(String, String),
+    #[error("invalid input '{0}'")]
+    InvalidInput(String),
+    #[error("{0}")]
+    Bug(String),
 }
 
 impl CashError {

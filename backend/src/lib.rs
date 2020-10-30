@@ -25,7 +25,7 @@ impl Runtime {
     }
 
     pub fn interpret(&mut self, text: String) {
-        let parse_result = rules::Language::parse(rules::Rule::Range, &text.trim());
+        let parse_result = rules::Language::parse(rules::Rule::String, &text.trim());
         if parse_result.is_err() {
             println!("Error occured while parsing input: {:?}", parse_result);
             return;
@@ -68,6 +68,6 @@ mod tests {
     fn simple() {
         let mut runtime = Runtime::new();
         //runtime.interpret("$ echo('asd')".to_owned());
-        runtime.interpret("1__2_____4..0xaaa".to_owned());
+        runtime.interpret("\"~hello\\nworld\\b\\x134\"".to_owned());
     }
 }

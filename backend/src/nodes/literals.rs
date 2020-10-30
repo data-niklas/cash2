@@ -4,6 +4,7 @@ use crate::error::CashError;
 use crate::rules::Rule;
 use crate::value::Value;
 use crate::values::*;
+use dirs;
 use pest::iterators::{Pair, Pairs};
 use std::sync::{Arc, RwLock};
 
@@ -132,5 +133,95 @@ impl RangeLiteral {
         let upper = make_ast(upper_node)?;
 
         Ok(Box::new(RangeLiteral { lower, upper }))
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct StringLiteral {
+    value: String,
+}
+
+impl Node for StringLiteral {
+    fn eval(
+        &self,
+        _ctx: Arc<RwLock<Context>>,
+    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+        StringValue::boxed(self.value.to_owned())
+    }
+}
+impl std::fmt::Display for StringLiteral {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "StringLiteral '{}'", self.value)
+    }
+}
+
+impl StringLiteral {
+    pub fn parse_inner(pair: Pairs<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
+        let mut value = String::new();
+        for node in pair {
+            match node.as_rule() {
+                Rule::Home => {
+                    if let Some(path) = dirs::home_dir() {
+                        value += path
+                            .to_str()
+                            .expect("Home directory contains invalid unicode symbols");
+                    } else {
+                        return CashError::Bug("Could not get home directory".to_owned()).boxed();
+                    }
+                }
+                Rule::SingleQuoteText | Rule::DoubleQuoteText => {
+                    value += node.as_span().as_str();
+                }
+                Rule::Escape => match &node.as_span().as_str()[1..] {
+                    "n" => {
+                        value += "\n";
+                    }
+                    "r" => {
+                        value += "\r";
+                    }
+                    "t" => {
+                        value += "\t";
+                    }
+                    "b" => {
+                        value += "\x7f";
+                    }
+                    any => {
+                        if any.starts_with('x') {
+                            if any.len() > 1 {
+                                if let Ok(number) = u32::from_str_radix(&any[1..], 16) {
+                                    value += &std::char::from_u32(number)
+                                        .expect("u32 should convert to an unicode char")
+                                        .to_string();
+                                } else {
+                                    return CashError::InvalidInput(
+                                        "'".to_owned() + any + "' for escape sequence",
+                                    )
+                                    .boxed();
+                                }
+                            }
+                        } else {
+                            value += any;
+                        }
+                    }
+                },
+                Rule::Interpolation => {
+                    let content = node
+                        .into_inner()
+                        .next()
+                        .expect("Could not happen - grammar!");
+                    let result = make_ast(content)?;
+                    value += &result.to_string();
+                }
+                _ => {
+                    return CashError::Bug(format!(
+                        "StringLiteral should not contain node {:?}",
+                        node.as_rule()
+                    ))
+                    .boxed();
+                }
+            }
+        }
+
+        Ok(Box::new(StringLiteral { value }))
     }
 }
