@@ -68,6 +68,6 @@ mod tests {
     fn simple() {
         let mut runtime = Runtime::new();
         //runtime.interpret("$ echo('asd')".to_owned());
-        runtime.interpret("\"~hello\\nworld\\b\\x134\"".to_owned());
+        runtime.interpret("\"~hello\\nworld\\x134\"".to_owned());
     }
 }

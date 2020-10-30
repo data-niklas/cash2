@@ -136,27 +136,36 @@ impl RangeLiteral {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct StringLiteral {
-    value: String,
+    strings: Vec<String>,
+    interpolations: Vec<Box<dyn Node>>,
 }
 
 impl Node for StringLiteral {
     fn eval(
         &self,
-        _ctx: Arc<RwLock<Context>>,
+        ctx: Arc<RwLock<Context>>,
     ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
-        StringValue::boxed(self.value.to_owned())
+        let mut text = self.strings[0].to_owned();
+        for i in 0..self.interpolations.len() {
+            let value = self.interpolations[i].eval(ctx.clone())?;
+            text += &value.to_string();
+            text += &self.strings[i + 1];
+        }
+        StringValue::boxed(text)
     }
 }
 impl std::fmt::Display for StringLiteral {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "StringLiteral '{}'", self.value)
+        write!(f, "StringLiteral")
     }
 }
 
 impl StringLiteral {
     pub fn parse_inner(pair: Pairs<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
+        let mut strings = Vec::new();
+        let mut interpolations = Vec::new();
         let mut value = String::new();
         for node in pair {
             match node.as_rule() {
@@ -210,7 +219,9 @@ impl StringLiteral {
                         .next()
                         .expect("Could not happen - grammar!");
                     let result = make_ast(content)?;
-                    value += &result.to_string();
+                    strings.push(value);
+                    value = String::new();
+                    interpolations.push(result);
                 }
                 _ => {
                     return CashError::Bug(format!(
@@ -221,7 +232,10 @@ impl StringLiteral {
                 }
             }
         }
-
-        Ok(Box::new(StringLiteral { value }))
+        strings.push(value);
+        Ok(Box::new(StringLiteral {
+            strings,
+            interpolations,
+        }))
     }
 }

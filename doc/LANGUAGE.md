@@ -10,6 +10,7 @@
 		- `sometext'`
 		- interpolation via `${}` 
 		- e.g.: `'3 + 4 = ${3+4}'`
+		- "-" removes occurences of the second string
 	- Integer
 		- `0x`
 		- `0b`
