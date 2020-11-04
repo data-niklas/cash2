@@ -24,6 +24,7 @@ pub fn make_ast(root: Pair<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::E
         Rule::String => StringLiteral::parse_inner(root.into_inner()),
         Rule::List => ListLiteral::parse_inner(root.into_inner()),
         Rule::Dict => DictLiteral::parse_inner(root.into_inner()),
+        Rule::Expr => Expr::parse_inner(root.into_inner()),
         _ => {
             unimplemented!();
         }

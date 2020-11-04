@@ -78,31 +78,31 @@
 
 
 - Operators:
-	- Indexing: ltr `[]`	0
-	- Function call: ltr `()`	0
-	- Not: rtl `!`	1
-	- Unary Plus: rtl `+`	1
-	- Unary Minus: rtl `-`	1
-	- Await: rtl `await`	1
-	- Exponentiation: rtl `**` 2
-	- Multiply: ltr `*` 3
-	- Divide: ltr `/` 3
-	- Modulo: ltr `%` 3
-	- Plus:  ltr `+` 4
-	- Minus: ltr `-` 4
-	- Bit ls: ltr `<<` 5
-	- Bit rs: ltr `>>` 5
-	- In: ltr `in` 6
-	- Lt: ltr `<` 6
-	- Gt: ltr `>` 6
-	- Lte: ltr `<=` 6
-	- Gte: ltr `>=` 6
-	- Ne: ltr `!=` 7
-	- Eq: ltr `==` 7
-	- And: ltr `&` 8
-	- Xor: ltr `^` 9
-	- Or: ltr `|` 10
-	- Async: rtl `async` 11
+	- Indexing: ltr `[]`	11
+	- Function call: ltr `()`	11
+	- Not: rtl `!`	10
+	- Unary Plus: rtl `+`	10
+	- Unary Minus: rtl `-`	10
+	- Await: rtl `await`	10
+	- Exponentiation: rtl `**` 9
+	- Multiply: ltr `*` 8
+	- Divide: ltr `/` 8
+	- Modulo: ltr `%` 8
+	- Add:  ltr `+` 7
+	- Subtract: ltr `-` 7
+	- Bit ls: ltr `<<` 6
+	- Bit rs: ltr `>>` 6
+	- In: ltr `in` 5
+	- Lt: ltr `<` 5
+	- Gt: ltr `>` 5
+	- Lte: ltr `<=` 5
+	- Gte: ltr `>=` 5
+	- Ne: ltr `!=` 4
+	- Eq: ltr `==` 4
+	- And: ltr `&` 3
+	- Xor: ltr `^` 2
+	- Or: ltr `|` 1
+	- Async: rtl `async` 0
 
 - Control structures
 	- Conditionals:

@@ -3,6 +3,7 @@
 use std::sync::{Arc, RwLock};
 
 mod ast;
+mod cashstd;
 mod context;
 mod error;
 mod nodes;
@@ -25,7 +26,7 @@ impl Runtime {
     }
 
     pub fn interpret(&mut self, text: String) {
-        let parse_result = rules::Language::parse(rules::Rule::Dict, &text.trim());
+        let parse_result = rules::Language::parse(rules::Rule::Expr, &text.trim());
         if parse_result.is_err() {
             println!("Error occured while parsing input: {:?}", parse_result);
             return;
@@ -49,6 +50,7 @@ impl Runtime {
             return;
         }
         let tree_result = ast::make_ast(root_node);
+        //println!("{:?}",tree_result);
         if tree_result.is_err() {
             println!("Error occured while parsing input: {:?}", tree_result);
             return;
@@ -70,9 +72,6 @@ mod tests {
         //runtime.interpret("$ echo('asd')".to_owned());
         //runtime.interpret("\"~hello\\nworld\\x134\"".to_owned());
         //runtime.interpret("[false, false, false]".to_owned());
-        runtime.interpret("{
-            \"a\": 3,
-            \"fucking wokrs\": 3____________________________________________________________________________42
-        }".to_owned());
+        runtime.interpret("2 >> 1 << 3".to_owned());
     }
 }

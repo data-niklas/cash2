@@ -3,7 +3,7 @@ Divider = _{ "\n" | ";" | EOI }
 NewLines = _{ "\n"* }
 
 WrappedBlock = _{ "{" ~ NewLines ~ Block ~ NewLines ~ "}"}
-Statement = { WhileLoop | ForLoop | Conditional | WrappedBlock | Assignment | Capture | Expr }
+Statement = { WhileLoop | ForLoop | Conditional | WrappedBlock | Assignment | ("$" ~ Pipe) | Expr }
 Assignment = { Ident ~ Indexing* ~ Infix? ~ "=" ~ Expr }
 ForLoop = { "for" ~ Ident ~ "in" ~ Expr ~ WrappedBlock }
 WhileLoop = { "while" ~ Expr ~ WrappedBlock }
@@ -12,15 +12,16 @@ If = _{ "if" ~ Expr ~ WrappedBlock }
 Elif = _{ "elif" ~ Expr ~ WrappedBlock }
 Else = _{ "else" ~ WrappedBlock }
 
+
 Expr = { Prefix* ~ Primary ~ Postfix* ~ (Infix ~ Prefix* ~ Primary ~ Postfix*)* }
-Primary = { Literal | Paren | Capture }
+Primary = _{ Literal | Paren | Capture }
 Pipe = { PipeCall ~ ( "|" ~ PipeCall)* }
 PipeCall = { Ident ~ FunctionCall}
 Capture = { "$" ~ Pipe }
 Literal = { Range | Float | Int | String | Bool | List | Dict | Function }
 Paren = _{ "(" ~ Expr ~ ")" }
 
-Infix = { "+" | "-" | "*" | "/" | "%" | "**" | "!=" | "==" | "<=" | ">=" | "<" | ">" | "&" | "|" | "^" | "in" | "<<" | ">>" }
+Infix = { "<<" | ">>" | "**" | "+" | "-" | "*" | "/" | "%" | "!=" | "==" | "<=" | ">=" | "<" | ">" | "&" | "|" | "^" | "in" }
 Prefix = { "+" | "-" | "!" | "await" | "async" }
 Postfix = { FunctionCall | Indexing }
 
