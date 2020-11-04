@@ -1,10 +1,12 @@
 mod boolean;
+mod dict;
 mod float;
 mod integer;
 mod list;
 mod range;
 mod string;
 pub use boolean::*;
+pub use dict::*;
 pub use float::*;
 pub use integer::*;
 pub use list::*;

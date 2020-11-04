@@ -124,12 +124,10 @@ impl Value for StringValue {
         }
     }
     fn eq(&self, value: Box<dyn Value>) -> ValueResult {
-        let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<StringValue>() {
             BooleanValue::boxed(self.value == other.value)
         } else {
-            CashError::InvalidOperation("equality".to_owned(), "string ".to_owned() + typename)
-                .boxed()
+            BooleanValue::boxed(false)
         }
     }
     fn ne(&self, value: Box<dyn Value>) -> ValueResult {

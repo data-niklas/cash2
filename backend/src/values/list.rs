@@ -59,7 +59,7 @@ impl Value for ListValue {
                     .boxed()
             } else {
                 let mut v = Vec::with_capacity(other.value as usize * self.values.len());
-                for i in 0..(other.value as usize) {
+                for _i in 0..(other.value as usize) {
                     let _ = self
                         .values
                         .iter()
@@ -99,7 +99,6 @@ impl Value for ListValue {
         BooleanValue::boxed(false)
     }
     fn eq(&self, value: Box<dyn Value>) -> ValueResult {
-        let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<ListValue>() {
             if self.values.len() == other.values.len() {
                 for (x, y) in self.values.iter().zip(other.values.iter()) {
@@ -118,8 +117,7 @@ impl Value for ListValue {
             }
             BooleanValue::boxed(false)
         } else {
-            CashError::InvalidOperation("equality".to_owned(), "list ".to_owned() + typename)
-                .boxed()
+            BooleanValue::boxed(false)
         }
     }
     fn ne(&self, value: Box<dyn Value>) -> ValueResult {

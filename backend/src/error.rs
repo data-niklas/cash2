@@ -10,6 +10,8 @@ pub enum CashError {
     InvalidType(String, String),
     #[error("index '{0}' is out of bounds for '{1}'")]
     IndexOutOfBounds(i64, String),
+    #[error("key '{0}' not found for '{1}'")]
+    KeyNotFound(String, String),
     #[error("invalid input '{0}'")]
     InvalidInput(String),
     #[error("invalid value '{0}' in '{1}'")]

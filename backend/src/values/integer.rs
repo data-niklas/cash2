@@ -174,14 +174,12 @@ impl Value for IntegerValue {
         }
     }
     fn eq(&self, value: Box<dyn Value>) -> ValueResult {
-        let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<IntegerValue>() {
             BooleanValue::boxed(self.value == other.value)
         } else if let Some(other) = value.downcast_ref::<FloatValue>() {
             BooleanValue::boxed(((self.value as f64) - other.value).abs() < super::float::EPSILON)
         } else {
-            CashError::InvalidOperation("equality".to_owned(), "integer ".to_owned() + typename)
-                .boxed()
+            BooleanValue::boxed(false)
         }
     }
     fn ne(&self, value: Box<dyn Value>) -> ValueResult {

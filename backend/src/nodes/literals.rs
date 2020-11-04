@@ -4,9 +4,10 @@ use crate::error::CashError;
 use crate::rules::Rule;
 use crate::value::Value;
 use crate::values::*;
-use dirs;
-use pest::iterators::{Pair, Pairs};
+use pest::iterators::Pairs;
 use std::sync::{Arc, RwLock};
+
+use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 pub struct BooleanLiteral {
@@ -172,6 +173,53 @@ impl ListLiteral {
             vals.push(make_ast(node)?);
         }
         Ok(Box::new(ListLiteral { vals }))
+    }
+}
+
+#[derive(Debug)]
+pub struct DictLiteral {
+    vals: Vec<(Box<dyn Node>, Box<dyn Node>)>,
+}
+
+impl Node for DictLiteral {
+    fn eval(
+        &self,
+        ctx: Arc<RwLock<Context>>,
+    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+        let mut v: HashMap<String, Box<dyn Value>> = HashMap::with_capacity(self.vals.len());
+        for (key, val) in &self.vals {
+            v.insert(
+                (*key).eval(ctx.clone())?.to_string(),
+                (*val).eval(ctx.clone())?,
+            );
+        }
+        DictValue::boxed(v)
+    }
+}
+
+impl std::fmt::Display for DictLiteral {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = String::from("DictLiteral {");
+        for (key, value) in &self.vals {
+            s.push_str(&format!("{}: {} ", key, value));
+        }
+        s.push_str("}");
+        write!(f, "{}", s)
+    }
+}
+
+impl DictLiteral {
+    pub fn parse_inner(pair: Pairs<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
+        let mut vals = Vec::new();
+        for node in pair {
+            let mut inner: Vec<_> = node.into_inner().collect();
+            if inner.len() != 2 {
+                return CashError::Bug("Dict value-pair must have length 2".to_owned()).boxed();
+            } else {
+                vals.push((make_ast(inner.remove(0))?, make_ast(inner.remove(0))?));
+            }
+        }
+        Ok(Box::new(DictLiteral { vals }))
     }
 }
 

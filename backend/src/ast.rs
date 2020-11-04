@@ -5,7 +5,7 @@ use crate::nodes::*;
 use crate::rules::Rule;
 use crate::value::Value;
 use downcast_rs::{impl_downcast, Downcast};
-use pest::iterators::{Pair, Pairs};
+use pest::iterators::Pair;
 
 pub trait Node: std::fmt::Display + std::fmt::Debug + Downcast {
     fn eval(&self, ctx: Arc<RwLock<Context>>)
@@ -23,6 +23,7 @@ pub fn make_ast(root: Pair<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::E
         Rule::Range => RangeLiteral::parse_inner(root.into_inner()),
         Rule::String => StringLiteral::parse_inner(root.into_inner()),
         Rule::List => ListLiteral::parse_inner(root.into_inner()),
+        Rule::Dict => DictLiteral::parse_inner(root.into_inner()),
         _ => {
             unimplemented!();
         }

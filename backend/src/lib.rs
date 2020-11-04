@@ -18,19 +18,19 @@ pub struct Runtime {
 }
 
 impl Runtime {
-    pub fn new() -> Runtime {
+    pub fn new() -> Self {
         Runtime {
             ctx: Arc::new(RwLock::new(Context::root())),
         }
     }
 
     pub fn interpret(&mut self, text: String) {
-        let parse_result = rules::Language::parse(rules::Rule::String, &text.trim());
+        let parse_result = rules::Language::parse(rules::Rule::Dict, &text.trim());
         if parse_result.is_err() {
             println!("Error occured while parsing input: {:?}", parse_result);
             return;
         }
-        let mut parse_tree = parse_result.expect("Cannot happen: tested by if");
+        let parse_tree = parse_result.expect("Cannot happen: tested by if");
         let mut root_nodes = parse_tree.collect::<Vec<_>>();
         if root_nodes.len() != 1 {
             println!("Error occured while parsing input: Not exactly one root node");
@@ -68,7 +68,11 @@ mod tests {
     fn simple() {
         let mut runtime = Runtime::new();
         //runtime.interpret("$ echo('asd')".to_owned());
-        runtime.interpret("\"~hello\\nworld\\x134\"".to_owned());
+        //runtime.interpret("\"~hello\\nworld\\x134\"".to_owned());
         //runtime.interpret("[false, false, false]".to_owned());
+        runtime.interpret("{
+            \"a\": 3,
+            \"fucking wokrs\": 3____________________________________________________________________________42
+        }".to_owned());
     }
 }

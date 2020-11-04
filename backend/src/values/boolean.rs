@@ -23,12 +23,10 @@ impl Value for BooleanValue {
         Self::boxed(!self.value)
     }
     fn eq(&self, value: Box<dyn Value>) -> ValueResult {
-        let typename = value.get_type_name();
         if let Ok(other) = value.downcast::<BooleanValue>() {
             BooleanValue::boxed(self.value == other.value)
         } else {
-            CashError::InvalidOperation("equality".to_owned(), "boolean ".to_owned() + typename)
-                .boxed()
+            BooleanValue::boxed(false)
         }
     }
     fn ne(&self, value: Box<dyn Value>) -> ValueResult {
