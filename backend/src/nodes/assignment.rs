@@ -3,9 +3,7 @@ use crate::context::Context;
 use crate::error::CashError;
 use crate::rules::Rule;
 use crate::value::Value;
-use pest::iterators::{Pair, Pairs};
-use std::iter::Peekable;
-use std::slice::Iter;
+use pest::iterators::Pairs;
 use std::sync::{Arc, RwLock};
 
 use super::{Expr, Infix, Postfix};
@@ -22,14 +20,14 @@ impl Node for Assignment {
     fn eval(
         &self,
         ctx: Arc<RwLock<Context>>,
-    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
         if self.indexes.len() != 0 {
             unimplemented!()
         }
         let mut result = self.expr.eval(ctx.clone())?;
         if let Some(infix) = &self.infix {
             if let Some(val) = ctx.read().expect("could not read value").get(&self.ident) {
-                result = Expr::compute_infix(val, result, &infix)?;
+                result = Expr::compute_infix(val, &result, &infix)?;
             } else {
                 return CashError::VariableNotFound(self.ident.clone()).boxed();
             }
@@ -37,7 +35,7 @@ impl Node for Assignment {
         if self.indexes.len() == 0 {
             ctx.write()
                 .expect("could not write value")
-                .set(&self.ident, result.clone());
+                .set(&self.ident, (*result).clone());
             Ok(result)
         } else {
             unimplemented!()

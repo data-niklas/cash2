@@ -7,7 +7,7 @@ use crate::values::StringValue;
 #[derive(Debug)]
 pub struct Context {
     parent: Option<Arc<RwLock<Context>>>,
-    vars: HashMap<String, Arc<dyn Value>>,
+    vars: HashMap<String, Arc<Box<dyn Value>>>,
 }
 
 impl Context {
@@ -24,16 +24,16 @@ impl Context {
         }
     }
 
-    pub fn get(&self, key: &str) -> Option<Arc<dyn Value>> {
+    pub fn get(&self, key: &str) -> Option<Box<dyn Value>> {
         if key.starts_with("$") {
             if let Ok(val) = std::env::var(&key[1..]) {
-                return Some(Arc::new(StringValue { value: val }));
+                return Some(Box::new(StringValue { value: val }));
             } else {
                 return None;
             }
         }
         if self.vars.contains_key(key) {
-            return Some(self.vars.get(key).unwrap().clone());
+            return Some((**self.vars.get(key).unwrap()).clone());
         }
         if let Some(parent) = &self.parent {
             return parent
@@ -44,7 +44,7 @@ impl Context {
         None
     }
 
-    pub fn set(&mut self, key: &str, value: Arc<dyn Value>) {
+    pub fn set(&mut self, key: &str, value: Box<dyn Value>) {
         if key.starts_with("$") {
             std::env::set_var(&key[1..], &value.to_string());
             return;
@@ -63,11 +63,11 @@ impl Context {
                 return;
             }
         }
-        self.vars.insert(key.to_owned(), value);
+        self.set_self(key, value);
     }
 
-    pub fn set_self(&mut self, key: &str, value: Arc<dyn Value>) {
-        self.vars.insert(key.to_owned(), value);
+    pub fn set_self(&mut self, key: &str, value: Box<dyn Value>) {
+        self.vars.insert(key.to_owned(), Arc::new(value));
     }
 }
 

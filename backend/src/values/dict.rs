@@ -2,16 +2,15 @@ use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::BooleanValue;
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
 
 #[derive(Debug)]
 pub struct DictValue {
-    pub values: HashMap<String, Arc<dyn Value>>,
+    pub values: HashMap<String, Box<dyn Value>>,
 }
 
 impl DictValue {
-    pub fn boxed(values: HashMap<String, Arc<dyn Value>>) -> ValueResult {
-        Ok(Arc::new(DictValue { values }))
+    pub fn boxed(values: HashMap<String, Box<dyn Value>>) -> ValueResult {
+        Ok(Box::new(DictValue { values }))
     }
 }
 
@@ -19,7 +18,7 @@ impl Value for DictValue {
     fn get_type_name(&self) -> &'static str {
         "dict"
     }
-    fn index(&self, index: Arc<dyn Value>) -> ValueResult {
+    fn index(&self, index: &Box<dyn Value>) -> ValueResult {
         let index = index.to_string();
         if self.values.contains_key(&index) {
             let res = self
@@ -31,11 +30,11 @@ impl Value for DictValue {
             CashError::KeyNotFound(index, self.get_type_name().to_owned()).boxed()
         }
     }
-    fn contains(&self, value: Arc<dyn Value>) -> ValueResult {
+    fn contains(&self, value: &Box<dyn Value>) -> ValueResult {
         let index = value.to_string();
         BooleanValue::boxed(self.values.contains_key(&index))
     }
-    fn eq(&self, value: Arc<dyn Value>) -> ValueResult {
+    fn eq(&self, value: &Box<dyn Value>) -> ValueResult {
         if let Some(other) = value.downcast_ref::<DictValue>() {
             if self.values.len() != other.values.len() {
                 return BooleanValue::boxed(false);
@@ -45,10 +44,7 @@ impl Value for DictValue {
                     return BooleanValue::boxed(false);
                 }
                 let value2 = other.values.get(key).expect("Value should exist");
-                if let Some(b) = (*value)
-                    .ne((*value2).clone())?
-                    .downcast_ref::<BooleanValue>()
-                {
+                if let Some(b) = (*value).ne(value2)?.downcast_ref::<BooleanValue>() {
                     if b.value {
                         return BooleanValue::boxed(false);
                     }
@@ -64,14 +60,14 @@ impl Value for DictValue {
             BooleanValue::boxed(false)
         }
     }
-    fn ne(&self, value: Arc<dyn Value>) -> ValueResult {
+    fn ne(&self, value: &Box<dyn Value>) -> ValueResult {
         self.eq(value)?.not()
     }
-    fn r#async(&self) -> ValueResult {
+    fn r#async(self: Box<Self>) -> ValueResult {
         unimplemented!()
     }
     fn clone(&self) -> Box<dyn Value> {
-        let mut v: HashMap<String, Arc<dyn Value>> = HashMap::with_capacity(self.values.len());
+        let mut v: HashMap<String, Box<dyn Value>> = HashMap::with_capacity(self.values.len());
         for (key, value) in &self.values {
             v.insert(key.to_owned(), (*value).clone());
         }

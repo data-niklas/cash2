@@ -3,9 +3,7 @@ use crate::context::Context;
 use crate::error::CashError;
 use crate::rules::Rule;
 use crate::value::Value;
-use pest::iterators::{Pair, Pairs};
-use std::iter::Peekable;
-use std::slice::Iter;
+use pest::iterators::Pair;
 use std::sync::{Arc, RwLock};
 
 #[derive(Clone, Debug)]
@@ -17,7 +15,7 @@ impl Node for Ident {
     fn eval(
         &self,
         ctx: Arc<RwLock<Context>>,
-    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
         if let Some(val) = ctx.read().expect("could not read value").get(&self.ident) {
             Ok(val)
         } else {

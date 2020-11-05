@@ -9,7 +9,7 @@ use pest::iterators::Pair;
 
 pub trait Node: std::fmt::Display + std::fmt::Debug + Downcast {
     fn eval(&self, ctx: Arc<RwLock<Context>>)
-        -> Result<Arc<dyn Value>, Box<dyn std::error::Error>>;
+        -> Result<Box<dyn Value>, Box<dyn std::error::Error>>;
 }
 impl_downcast!(Node);
 

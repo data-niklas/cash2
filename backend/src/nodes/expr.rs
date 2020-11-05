@@ -20,7 +20,7 @@ impl Node for Expr {
     fn eval(
         &self,
         ctx: Arc<RwLock<Context>>,
-    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
         let mut values = Vec::new();
         for value in &self.values {
             values.push(self.eval_primary(&value, ctx.clone())?);
@@ -35,10 +35,10 @@ impl Node for Expr {
 
 impl Expr {
     fn climb_ops(
-        values: &mut impl std::iter::Iterator<Item = Arc<dyn Value>>,
+        values: &mut impl std::iter::Iterator<Item = Box<dyn Value>>,
         infixes: &mut Peekable<Iter<Infix>>,
         min_precedence: usize,
-    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
         let mut result = values.next().expect("A value should exist");
         while let Some(next) = infixes.peek() {
             let mut prec = next.precedence();
@@ -50,16 +50,16 @@ impl Expr {
                 prec += 1;
             }
             let rhs = Self::climb_ops(values, infixes, prec)?;
-            result = Self::compute_infix(result, rhs, next)?;
+            result = Self::compute_infix(result, &rhs, next)?;
         }
         Ok(result)
     }
 
     pub fn compute_infix(
-        lhs: Arc<dyn Value>,
-        rhs: Arc<dyn Value>,
+        lhs: Box<dyn Value>,
+        rhs: &Box<dyn Value>,
         infix: &Infix,
-    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
         match infix {
             Infix::Exponentiation => lhs.power(rhs),
             Infix::Multiply => lhs.multiply(rhs),
@@ -86,21 +86,21 @@ impl Expr {
         &self,
         primary: &(Vec<Prefix>, Box<dyn Node>, Vec<Postfix>),
         ctx: Arc<RwLock<Context>>,
-    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
         let (prefixes, value, postfixes) = primary;
         let mut value = value.eval(ctx.clone())?;
         for postfix in postfixes {
             match postfix {
                 Postfix::FunctionCall(nodes) => {
-                    let mut args: Vec<Arc<dyn Value>> = Vec::new();
+                    let mut args: Vec<Box<dyn Value>> = Vec::new();
                     for node in nodes {
                         args.push(node.eval(ctx.clone())?);
                     }
                     value = value.call(args)?;
                 }
                 Postfix::Indexing(node) => {
-                    let arg: Arc<dyn Value> = node.eval(ctx.clone())?;
-                    value = value.index(arg)?;
+                    let arg: Box<dyn Value> = node.eval(ctx.clone())?;
+                    value = value.index(&arg)?;
                 }
             }
         }
@@ -319,7 +319,7 @@ pub enum Postfix {
 }
 
 impl Postfix {
-    pub fn parse(mut inner: Pair<Rule>) -> Self {
+    pub fn parse(inner: Pair<Rule>) -> Self {
         match inner.as_rule() {
             Rule::FunctionCall => {
                 let mut nodes = Vec::new();

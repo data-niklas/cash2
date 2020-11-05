@@ -1,7 +1,6 @@
 use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, FloatValue, IntegerValue};
-use std::sync::{Arc, RwLock};
 
 #[derive(Debug, Clone)]
 pub struct RangeValue {
@@ -15,7 +14,7 @@ impl RangeValue {
         if length < 1 {
             CashError::InvalidLength(length, "range".to_owned()).boxed()
         } else {
-            Ok(Arc::new(RangeValue { lower, upper }))
+            Ok(Box::new(RangeValue { lower, upper }))
         }
     }
 }
@@ -27,58 +26,69 @@ impl Value for RangeValue {
     fn get_type_name(&self) -> &'static str {
         "range"
     }
-    fn uplus(&self) -> ValueResult {
-        RangeValue::boxed(self.lower, self.upper)
+    fn uplus(self: Box<Self>) -> ValueResult {
+        Ok(self)
     }
-    fn uminus(&self) -> ValueResult {
-        RangeValue::boxed(-self.upper, -self.lower)
+    fn uminus(mut self: Box<Self>) -> ValueResult {
+        let temp = -self.upper;
+        self.upper = -self.lower;
+        self.lower = temp;
+        Ok(self)
     }
-    fn multiply(&self, value: Arc<dyn Value>) -> ValueResult {
+    fn multiply(mut self: Box<Self>, value: &Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         let length = self.upper - self.lower;
         if let Some(other) = value.downcast_ref::<IntegerValue>() {
             let newlength = length * other.value;
-            RangeValue::boxed(self.lower, self.lower + newlength)
+            self.upper = self.lower + newlength;
+            Ok(self)
         } else if let Some(other) = value.downcast_ref::<FloatValue>() {
             let newlength = (length as f64 * other.value) as i64;
-            RangeValue::boxed(self.lower, self.lower + newlength)
+            self.upper = self.lower + newlength;
+            Ok(self)
         } else {
             CashError::InvalidOperation("multiply".to_owned(), "range ".to_owned() + typename)
                 .boxed()
         }
     }
-    fn division(&self, value: Arc<dyn Value>) -> ValueResult {
+    fn division(mut self: Box<Self>, value: &Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         let length = self.upper - self.lower;
         if let Some(other) = value.downcast_ref::<IntegerValue>() {
             let newlength = length / other.value;
-            RangeValue::boxed(self.lower, self.lower + newlength)
+            self.upper = self.lower + newlength;
+            Ok(self)
         } else if let Some(other) = value.downcast_ref::<FloatValue>() {
             let newlength = (length as f64 * other.value) as i64;
-            RangeValue::boxed(self.lower, self.lower + newlength)
+            self.upper = self.lower + newlength;
+            Ok(self)
         } else {
             CashError::InvalidOperation("division".to_owned(), "range ".to_owned() + typename)
                 .boxed()
         }
     }
-    fn add(&self, value: Arc<dyn Value>) -> ValueResult {
+    fn add(mut self: Box<Self>, value: &Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<IntegerValue>() {
-            RangeValue::boxed(self.lower + other.value, self.upper + other.value)
+            self.lower += other.value;
+            self.upper += other.value;
+            Ok(self)
         } else {
             CashError::InvalidOperation("add".to_owned(), "range ".to_owned() + typename).boxed()
         }
     }
-    fn subtract(&self, value: Arc<dyn Value>) -> ValueResult {
+    fn subtract(mut self: Box<Self>, value: &Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<IntegerValue>() {
-            RangeValue::boxed(self.lower - other.value, self.upper - other.value)
+            self.lower -= other.value;
+            self.upper -= other.value;
+            Ok(self)
         } else {
             CashError::InvalidOperation("subtract".to_owned(), "range ".to_owned() + typename)
                 .boxed()
         }
     }
-    fn contains(&self, value: Arc<dyn Value>) -> ValueResult {
+    fn contains(&self, value: &Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<IntegerValue>() {
             BooleanValue::boxed(self.lower <= other.value && self.upper > other.value)
@@ -89,7 +99,7 @@ impl Value for RangeValue {
                 .boxed()
         }
     }
-    fn eq(&self, value: Arc<dyn Value>) -> ValueResult {
+    fn eq(&self, value: &Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<RangeValue>() {
             BooleanValue::boxed(self.lower == other.lower && self.upper == other.upper)
@@ -98,10 +108,10 @@ impl Value for RangeValue {
                 .boxed()
         }
     }
-    fn ne(&self, value: Arc<dyn Value>) -> ValueResult {
+    fn ne(&self, value: &Box<dyn Value>) -> ValueResult {
         self.eq(value)?.not()
     }
-    fn r#async(&self) -> ValueResult {
+    fn r#async(self: Box<Self>) -> ValueResult {
         unimplemented!();
     }
 }
