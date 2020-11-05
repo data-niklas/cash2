@@ -20,12 +20,12 @@ impl Node for Expr {
     fn eval(
         &self,
         ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
         let mut values = Vec::new();
         for value in &self.values {
             values.push(self.eval_primary(&value, ctx.clone())?);
         }
-        self.climb_ops(
+        Self::climb_ops(
             &mut values.into_iter(),
             &mut self.infixes.iter().peekable(),
             0,
@@ -35,11 +35,10 @@ impl Node for Expr {
 
 impl Expr {
     fn climb_ops(
-        &self,
-        values: &mut impl std::iter::Iterator<Item = Box<dyn Value>>,
+        values: &mut impl std::iter::Iterator<Item = Arc<dyn Value>>,
         infixes: &mut Peekable<Iter<Infix>>,
         min_precedence: usize,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
         let mut result = values.next().expect("A value should exist");
         while let Some(next) = infixes.peek() {
             let mut prec = next.precedence();
@@ -50,18 +49,17 @@ impl Expr {
             if next.left_to_right() {
                 prec += 1;
             }
-            let rhs = self.climb_ops(values, infixes, prec)?;
-            result = self.compute_infix(result, rhs, next)?;
+            let rhs = Self::climb_ops(values, infixes, prec)?;
+            result = Self::compute_infix(result, rhs, next)?;
         }
         Ok(result)
     }
 
-    fn compute_infix(
-        &self,
-        lhs: Box<dyn Value>,
-        rhs: Box<dyn Value>,
+    pub fn compute_infix(
+        lhs: Arc<dyn Value>,
+        rhs: Arc<dyn Value>,
         infix: &Infix,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
         match infix {
             Infix::Exponentiation => lhs.power(rhs),
             Infix::Multiply => lhs.multiply(rhs),
@@ -88,20 +86,20 @@ impl Expr {
         &self,
         primary: &(Vec<Prefix>, Box<dyn Node>, Vec<Postfix>),
         ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
         let (prefixes, value, postfixes) = primary;
         let mut value = value.eval(ctx.clone())?;
         for postfix in postfixes {
             match postfix {
                 Postfix::FunctionCall(nodes) => {
-                    let mut args: Vec<Box<dyn Value>> = Vec::new();
+                    let mut args: Vec<Arc<dyn Value>> = Vec::new();
                     for node in nodes {
                         args.push(node.eval(ctx.clone())?);
                     }
                     value = value.call(args)?;
                 }
                 Postfix::Indexing(node) => {
-                    let arg: Box<dyn Value> = node.eval(ctx.clone())?;
+                    let arg: Arc<dyn Value> = node.eval(ctx.clone())?;
                     value = value.index(arg)?;
                 }
             }
@@ -172,7 +170,11 @@ impl Expr {
                     )?);
                 }
                 Rule::Postfix => {
-                    postfixes.push(Postfix::parse(pair.into_inner()));
+                    postfixes.push(Postfix::parse(
+                        pair.into_inner()
+                            .next()
+                            .expect("Did not find node in postfix?"),
+                    ));
                 }
                 Rule::Infix => {
                     infixes.push(Infix::parse(pair));
@@ -180,6 +182,9 @@ impl Expr {
                     prefixes = Vec::new();
                     postfixes = Vec::new();
                     primary = None;
+                }
+                Rule::Ident => {
+                    primary = Some(make_ast(pair)?);
                 }
                 _ => {
                     return CashError::Bug("Expr should not contains other rule".to_owned()).boxed()
@@ -314,19 +319,18 @@ pub enum Postfix {
 }
 
 impl Postfix {
-    pub fn parse(mut inner: Pairs<Rule>) -> Self {
-        let first = inner.next().expect("Postfix inner should contain a node");
-        match first.as_rule() {
+    pub fn parse(mut inner: Pair<Rule>) -> Self {
+        match inner.as_rule() {
             Rule::FunctionCall => {
                 let mut nodes = Vec::new();
-                for node in first.into_inner() {
+                for node in inner.into_inner() {
                     nodes.push(make_ast(node).expect("Could not create node from function call"));
                 }
                 Self::FunctionCall(nodes)
             }
             Rule::Indexing => {
                 let node = make_ast(
-                    first
+                    inner
                         .into_inner()
                         .next()
                         .expect("Indexing should contain a node"),

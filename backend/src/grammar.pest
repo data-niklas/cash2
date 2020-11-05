@@ -14,7 +14,7 @@ Else = _{ "else" ~ WrappedBlock }
 
 
 Expr = { Prefix* ~ Primary ~ Postfix* ~ (Infix ~ Prefix* ~ Primary ~ Postfix*)* }
-Primary = _{ Literal | Paren | Capture }
+Primary = _{ Literal | Paren | Capture | Ident }
 Pipe = { PipeCall ~ ( "|" ~ PipeCall)* }
 PipeCall = { Ident ~ FunctionCall}
 Capture = { "$" ~ Pipe }

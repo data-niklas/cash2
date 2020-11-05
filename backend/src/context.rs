@@ -2,7 +2,9 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
 use crate::value::Value;
+use crate::values::StringValue;
 
+#[derive(Debug)]
 pub struct Context {
     parent: Option<Arc<RwLock<Context>>>,
     vars: HashMap<String, Arc<dyn Value>>,
@@ -23,6 +25,13 @@ impl Context {
     }
 
     pub fn get(&self, key: &str) -> Option<Arc<dyn Value>> {
+        if key.starts_with("$") {
+            if let Ok(val) = std::env::var(&key[1..]) {
+                return Some(Arc::new(StringValue { value: val }));
+            } else {
+                return None;
+            }
+        }
         if self.vars.contains_key(key) {
             return Some(self.vars.get(key).unwrap().clone());
         }
@@ -36,6 +45,10 @@ impl Context {
     }
 
     pub fn set(&mut self, key: &str, value: Arc<dyn Value>) {
+        if key.starts_with("$") {
+            std::env::set_var(&key[1..], &value.to_string());
+            return;
+        }
         if let Some(parent) = &self.parent {
             if parent
                 .read()
@@ -55,5 +68,14 @@ impl Context {
 
     pub fn set_self(&mut self, key: &str, value: Arc<dyn Value>) {
         self.vars.insert(key.to_owned(), value);
+    }
+}
+
+impl std::fmt::Display for Context {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = String::from("Ctx: ");
+        s.push_str(&format!("Parent: {:?}", self.parent));
+        s.push_str(&format!("Vars: {:?}", self.vars));
+        write!(f, "{}", s)
     }
 }

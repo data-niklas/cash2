@@ -12,6 +12,8 @@ pub enum CashError {
     IndexOutOfBounds(i64, String),
     #[error("key '{0}' not found for '{1}'")]
     KeyNotFound(String, String),
+    #[error("variable '{0}' used before assignment")]
+    VariableNotFound(String),
     #[error("invalid input '{0}'")]
     InvalidInput(String),
     #[error("invalid value '{0}' in '{1}'")]

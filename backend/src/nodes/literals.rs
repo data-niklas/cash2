@@ -18,7 +18,7 @@ impl Node for BooleanLiteral {
     fn eval(
         &self,
         _ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
         BooleanValue::boxed(self.value)
     }
 }
@@ -60,7 +60,7 @@ impl Node for IntegerLiteral {
     fn eval(
         &self,
         _ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
         IntegerValue::boxed(self.value)
     }
 }
@@ -79,7 +79,7 @@ impl Node for FloatLiteral {
     fn eval(
         &self,
         _ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
         FloatValue::boxed(self.value)
     }
 }
@@ -108,7 +108,7 @@ impl Node for RangeLiteral {
     fn eval(
         &self,
         ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
         let lower = self.lower.eval(ctx.clone())?;
         let lower = lower.downcast_ref::<IntegerValue>();
         let upper = self.upper.eval(ctx)?;
@@ -146,8 +146,8 @@ impl Node for ListLiteral {
     fn eval(
         &self,
         ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
-        let mut v: Vec<Box<dyn Value>> = Vec::with_capacity(self.vals.len());
+    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
+        let mut v: Vec<Arc<dyn Value>> = Vec::with_capacity(self.vals.len());
         for val in &self.vals {
             v.push((*val).eval(ctx.clone())?);
         }
@@ -185,8 +185,8 @@ impl Node for DictLiteral {
     fn eval(
         &self,
         ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
-        let mut v: HashMap<String, Box<dyn Value>> = HashMap::with_capacity(self.vals.len());
+    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
+        let mut v: HashMap<String, Arc<dyn Value>> = HashMap::with_capacity(self.vals.len());
         for (key, val) in &self.vals {
             v.insert(
                 (*key).eval(ctx.clone())?.to_string(),
@@ -233,7 +233,7 @@ impl Node for StringLiteral {
     fn eval(
         &self,
         ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Value>, Box<dyn std::error::Error>> {
         let mut text = self.strings[0].to_owned();
         for i in 0..self.interpolations.len() {
             let value = self.interpolations[i].eval(ctx.clone())?;

@@ -1,6 +1,7 @@
 use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, IntegerValue};
+use std::sync::{Arc, RwLock};
 
 pub static EPSILON: f64 = 1e-15f64;
 
@@ -11,7 +12,7 @@ pub struct FloatValue {
 
 impl FloatValue {
     pub fn boxed(value: f64) -> ValueResult {
-        Ok(Box::new(FloatValue { value }))
+        Ok(Arc::new(FloatValue { value }))
     }
 }
 
@@ -28,7 +29,7 @@ impl Value for FloatValue {
     fn uminus(&self) -> ValueResult {
         FloatValue::boxed(-self.value)
     }
-    fn power(&self, value: Box<dyn Value>) -> ValueResult {
+    fn power(&self, value: Arc<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<FloatValue>() {
             FloatValue::boxed(self.value.powf(other.value))
@@ -38,7 +39,7 @@ impl Value for FloatValue {
             CashError::InvalidOperation("power".to_owned(), "float ".to_owned() + typename).boxed()
         }
     }
-    fn multiply(&self, value: Box<dyn Value>) -> ValueResult {
+    fn multiply(&self, value: Arc<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<FloatValue>() {
             FloatValue::boxed(self.value * other.value)
@@ -49,7 +50,7 @@ impl Value for FloatValue {
                 .boxed()
         }
     }
-    fn division(&self, value: Box<dyn Value>) -> ValueResult {
+    fn division(&self, value: Arc<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<FloatValue>() {
             FloatValue::boxed(self.value / other.value)
@@ -60,7 +61,7 @@ impl Value for FloatValue {
                 .boxed()
         }
     }
-    fn modulo(&self, value: Box<dyn Value>) -> ValueResult {
+    fn modulo(&self, value: Arc<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<FloatValue>() {
             FloatValue::boxed(self.value % other.value)
@@ -70,7 +71,7 @@ impl Value for FloatValue {
             CashError::InvalidOperation("modulo".to_owned(), "float ".to_owned() + typename).boxed()
         }
     }
-    fn add(&self, value: Box<dyn Value>) -> ValueResult {
+    fn add(&self, value: Arc<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<FloatValue>() {
             FloatValue::boxed(self.value + other.value)
@@ -80,7 +81,7 @@ impl Value for FloatValue {
             CashError::InvalidOperation("add".to_owned(), "float ".to_owned() + typename).boxed()
         }
     }
-    fn subtract(&self, value: Box<dyn Value>) -> ValueResult {
+    fn subtract(&self, value: Arc<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<FloatValue>() {
             FloatValue::boxed(self.value - other.value)
@@ -91,7 +92,7 @@ impl Value for FloatValue {
                 .boxed()
         }
     }
-    fn lt(&self, value: Box<dyn Value>) -> ValueResult {
+    fn lt(&self, value: Arc<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<FloatValue>() {
             BooleanValue::boxed(self.value < other.value)
@@ -102,7 +103,7 @@ impl Value for FloatValue {
                 .boxed()
         }
     }
-    fn gt(&self, value: Box<dyn Value>) -> ValueResult {
+    fn gt(&self, value: Arc<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<FloatValue>() {
             BooleanValue::boxed(self.value > other.value)
@@ -113,7 +114,7 @@ impl Value for FloatValue {
                 .boxed()
         }
     }
-    fn lte(&self, value: Box<dyn Value>) -> ValueResult {
+    fn lte(&self, value: Arc<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<FloatValue>() {
             BooleanValue::boxed(self.value <= other.value)
@@ -127,7 +128,7 @@ impl Value for FloatValue {
             .boxed()
         }
     }
-    fn gte(&self, value: Box<dyn Value>) -> ValueResult {
+    fn gte(&self, value: Arc<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<FloatValue>() {
             BooleanValue::boxed(self.value < other.value)
@@ -141,7 +142,7 @@ impl Value for FloatValue {
             .boxed()
         }
     }
-    fn eq(&self, value: Box<dyn Value>) -> ValueResult {
+    fn eq(&self, value: Arc<dyn Value>) -> ValueResult {
         if let Some(other) = value.downcast_ref::<FloatValue>() {
             BooleanValue::boxed((self.value - other.value).abs() < EPSILON)
         } else if let Some(other) = value.downcast_ref::<IntegerValue>() {
@@ -150,7 +151,7 @@ impl Value for FloatValue {
             BooleanValue::boxed(false)
         }
     }
-    fn ne(&self, value: Box<dyn Value>) -> ValueResult {
+    fn ne(&self, value: Arc<dyn Value>) -> ValueResult {
         self.eq(value)?.not()
     }
     fn r#async(&self) -> ValueResult {

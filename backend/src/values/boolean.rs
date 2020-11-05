@@ -1,5 +1,6 @@
 use crate::error::CashError;
 use crate::value::{Value, ValueResult};
+use std::sync::{Arc, RwLock};
 
 #[derive(Debug, Clone)]
 pub struct BooleanValue {
@@ -8,7 +9,7 @@ pub struct BooleanValue {
 
 impl BooleanValue {
     pub fn boxed(value: bool) -> ValueResult {
-        Ok(Box::new(BooleanValue { value }))
+        Ok(Arc::new(BooleanValue { value }))
     }
 }
 
@@ -22,35 +23,35 @@ impl Value for BooleanValue {
     fn not(&self) -> ValueResult {
         Self::boxed(!self.value)
     }
-    fn eq(&self, value: Box<dyn Value>) -> ValueResult {
-        if let Ok(other) = value.downcast::<BooleanValue>() {
+    fn eq(&self, value: Arc<dyn Value>) -> ValueResult {
+        if let Some(other) = value.downcast_ref::<BooleanValue>() {
             BooleanValue::boxed(self.value == other.value)
         } else {
             BooleanValue::boxed(false)
         }
     }
-    fn ne(&self, value: Box<dyn Value>) -> ValueResult {
+    fn ne(&self, value: Arc<dyn Value>) -> ValueResult {
         self.eq(value)?.not()
     }
-    fn and(&self, value: Box<dyn Value>) -> ValueResult {
+    fn and(&self, value: Arc<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
-        if let Ok(other) = value.downcast::<BooleanValue>() {
+        if let Some(other) = value.downcast_ref::<BooleanValue>() {
             BooleanValue::boxed(self.value && other.value)
         } else {
             CashError::InvalidOperation("and".to_owned(), "boolean ".to_owned() + typename).boxed()
         }
     }
-    fn xor(&self, value: Box<dyn Value>) -> ValueResult {
+    fn xor(&self, value: Arc<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
-        if let Ok(other) = value.downcast::<BooleanValue>() {
+        if let Some(other) = value.downcast_ref::<BooleanValue>() {
             BooleanValue::boxed((self.value || other.value) && (self.value != other.value))
         } else {
             CashError::InvalidOperation("and".to_owned(), "boolean ".to_owned() + typename).boxed()
         }
     }
-    fn or(&self, value: Box<dyn Value>) -> ValueResult {
+    fn or(&self, value: Arc<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
-        if let Ok(other) = value.downcast::<BooleanValue>() {
+        if let Some(other) = value.downcast_ref::<BooleanValue>() {
             BooleanValue::boxed(self.value || other.value)
         } else {
             CashError::InvalidOperation("and".to_owned(), "boolean ".to_owned() + typename).boxed()

@@ -9,7 +9,7 @@ use pest::iterators::Pair;
 
 pub trait Node: std::fmt::Display + std::fmt::Debug + Downcast {
     fn eval(&self, ctx: Arc<RwLock<Context>>)
-        -> Result<Box<dyn Value>, Box<dyn std::error::Error>>;
+        -> Result<Arc<dyn Value>, Box<dyn std::error::Error>>;
 }
 impl_downcast!(Node);
 
@@ -25,6 +25,8 @@ pub fn make_ast(root: Pair<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::E
         Rule::List => ListLiteral::parse_inner(root.into_inner()),
         Rule::Dict => DictLiteral::parse_inner(root.into_inner()),
         Rule::Expr => Expr::parse_inner(root.into_inner()),
+        Rule::Assignment => Assignment::parse_inner(root.into_inner()),
+        Rule::Ident => Ident::parse(root),
         _ => {
             unimplemented!();
         }
