@@ -1,16 +1,17 @@
-Block = { Statement ~ (Divider ~ NewLines ~ Statement)* }
+Main = { ( LineComment | MultilineComment | "\n")* ~ Block ~ ( LineComment | MultilineComment | "\n")* }
+Block = { NewLines ~ Statement ~ (Divider ~ NewLines ~ Statement)* ~ NewLines }
 Divider = _{ "\n" | ";" | EOI }
 NewLines = _{ "\n"* }
 
-WrappedBlock = _{ "{" ~ NewLines ~ Block ~ NewLines ~ "}"}
-Statement = { WhileLoop | ForLoop | Conditional | WrappedBlock | Assignment | ("$" ~ Pipe) | Expr }
+WrappedBlock = _{ "{" ~ Block ~ "}"}
+Statement = _{ WhileLoop | ForLoop | Conditional | WrappedBlock | Assignment | ("$" ~ Pipe) | Expr }
 Assignment = { Ident ~ Indexing* ~ Infix? ~ "=" ~ Expr }
 ForLoop = { "for" ~ Ident ~ "in" ~ Expr ~ WrappedBlock }
 WhileLoop = { "while" ~ Expr ~ WrappedBlock }
-Conditional = {If ~ Elif* ~ Else?}
-If = _{ "if" ~ Expr ~ WrappedBlock }
-Elif = _{ "elif" ~ Expr ~ WrappedBlock }
-Else = _{ "else" ~ WrappedBlock }
+Conditional = {If ~ NewLines ~ (Elif | "\n"+ )* ~ Else?}
+If = { "if" ~ Expr ~ WrappedBlock }
+Elif = { "elif" ~ Expr ~ WrappedBlock }
+Else = { "else" ~ WrappedBlock }
 
 
 Expr = { Prefix* ~ Primary ~ Postfix* ~ (Infix ~ Prefix* ~ Primary ~ Postfix*)* }
@@ -46,7 +47,7 @@ OctInt = @{ ASCII_OCT_DIGIT ~ ( "_"* ~ ASCII_OCT_DIGIT)* }
 BinInt = @{ ASCII_BIN_DIGIT ~ ( "_"* ~ ASCII_BIN_DIGIT)* }
 Float = @{ DecInt? ~ (("." ~ DecInt ~ "_"* ~ ( "e" ~ DecInt)?) | "e" ~ DecInt) }
 Bool = @{ "false" | "true" }
-Ident = @{ "$"? ~ ASCII_ALPHA ~ ( ASCII_ALPHANUMERIC | "_")* }
+Ident = @{ !Keyword ~ "$"? ~ ASCII_ALPHA ~ ( ASCII_ALPHANUMERIC | "_")* }
 Range = { (Int | Ident) ~ ".." ~ (Int | Ident) }
 
 
@@ -59,6 +60,10 @@ Escape = { "\\" ~ (("x" ~ ASCII_HEX_DIGIT{1,4}) | ANY) }
 DoubleQuoteText = { (!("\"" | Interpolation | Escape) ~ ANY)+ }
 SingleQuoteText = {  (!("\'" | Escape) ~ ANY)+}
 
-LineComment = @{ "#" ~ (!"\n" ~ ANY)* }
+
+Keyword = @{ "else" | "if" | "elif" | "while" | "for" } 
+
+LineComment = _{ "#" ~ (!"\n" ~ ANY)* }
+MultilineComment = _{"/*" ~ (!"*/" ~ ANY)* ~ "*/"}
 WHITESPACE = _{ " " | "\t" }
-COMMENT = _{ ("/*" ~ (!"*/" ~ ANY)* ~ "*/") | LineComment }
+COMMENT = _{ MultilineComment | LineComment }

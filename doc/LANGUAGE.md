@@ -64,6 +64,8 @@
 		- *//: scale (lower stays the same)
 			
 	- *Enum?*
+	- *Regexes*
+		- 
 	- Function
 		- `(head)->{body}`
 		- Head:

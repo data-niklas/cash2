@@ -17,11 +17,11 @@ impl Context {
             vars: HashMap::new(),
         }
     }
-    pub fn from_parent(parent: Arc<RwLock<Context>>) -> Context {
-        Context {
+    pub fn from_parent(parent: Arc<RwLock<Context>>) -> Arc<RwLock<Context>> {
+        Arc::new(RwLock::new(Context {
             parent: Some(parent),
             vars: HashMap::new(),
-        }
+        }))
     }
 
     pub fn get(&self, key: &str) -> Option<Box<dyn Value>> {
