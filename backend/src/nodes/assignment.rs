@@ -30,6 +30,10 @@ impl Node for Assignment {
                         Postfix::Indexing(index_node) => {
                             // inside of indexing it can only read from the context
                             let index = index_node.eval(ctx.clone())?;
+                            if index.get_type_name() == "range" {
+                                return CashError::InvalidOperation("indexing with infix".to_owned(), 
+                                    "range (if you REALLY want to do this, you can try it on commit 2d8f94a4401feebbcca93a3ae620cd33c0320647)".to_owned()).boxed();
+                            }
                             val = val.index(&index)?;
                         }
                         _ => unreachable!(),

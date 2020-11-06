@@ -77,6 +77,6 @@ mod tests {
         //runtime.interpret("\"~hello\\nworld\\x134\"".to_owned());
         //runtime.interpret("[false, false, false]".to_owned());
         runtime.interpret("a = [1,[0,1],[0,1]]".to_owned());
-        runtime.interpret("a[0] <== 3".to_owned());
+        runtime.interpret("a[1..3][0] = 3".to_owned());
     }
 }
