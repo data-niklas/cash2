@@ -69,7 +69,7 @@ impl Expr {
             Infix::Subtract => lhs.subtract(rhs),
             Infix::BitShiftLeft => lhs.bit_shift_l(rhs),
             Infix::BitShiftRight => lhs.bit_shift_r(rhs),
-            Infix::In => lhs.contains(rhs),
+            Infix::In => rhs.contains(&lhs),
             Infix::Lt => lhs.lt(rhs),
             Infix::Gt => lhs.gt(rhs),
             Infix::Lte => lhs.lte(rhs),

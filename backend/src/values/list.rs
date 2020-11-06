@@ -17,6 +17,50 @@ impl Value for ListValue {
     fn get_type_name(&self) -> &'static str {
         "list"
     }
+
+    fn indexed_set(
+        &mut self,
+        value: Box<dyn Value>,
+        indexes: &[Box<dyn Value>],
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        assert!(indexes.len() > 0);
+        if let Some(other) = indexes[0].downcast_ref::<IntegerValue>() {
+            let index: usize;
+            if other.value < 0 {
+                index = (self.values.len() as i64 + other.value) as usize;
+            } else {
+                index = other.value as usize;
+            }
+            if index >= self.values.len() || -other.value > self.values.len() as i64 {
+                CashError::IndexOutOfBounds(other.value, self.get_type_name().to_owned()).boxed()
+            } else {
+                if indexes.len() == 1 {
+                    self.values[index] = value;
+                    Ok(())
+                } else {
+                    self.values[index].indexed_set(value, &indexes[1..])
+                }
+            }
+        } else if let Some(other) = indexes[0].downcast_ref::<RangeValue>() {
+            if other.lower < 0 {
+                CashError::IndexOutOfBounds(other.lower, self.get_type_name().to_owned()).boxed()
+            } else if other.upper > self.values.len() as i64 {
+                CashError::IndexOutOfBounds(other.upper, self.get_type_name().to_owned()).boxed()
+            } else {
+                for i in other.lower..other.upper {
+                    if indexes.len() == 1 {
+                        self.values[i as usize] = (*value).clone();
+                    } else {
+                        self.values[i as usize].indexed_set((*value).clone(), &indexes[1..])?;
+                    }
+                }
+                Ok(())
+            }
+        } else {
+            CashError::InvalidOperation("indexing ".to_owned(), "list ".to_owned() + "todo").boxed()
+        }
+    }
+
     fn index(&self, index: &Box<dyn Value>) -> ValueResult {
         let typename = index.get_type_name();
         if let Some(other) = index.downcast_ref::<IntegerValue>() {

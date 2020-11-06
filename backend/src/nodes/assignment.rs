@@ -21,24 +21,53 @@ impl Node for Assignment {
         &self,
         ctx: Arc<RwLock<Context>>,
     ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
-        if self.indexes.len() != 0 {
-            unimplemented!()
-        }
         let mut result = self.expr.eval(ctx.clone())?;
         if let Some(infix) = &self.infix {
-            if let Some(val) = ctx.read().expect("could not read value").get(&self.ident) {
+            if let Some(mut val) = ctx.read().expect("could not read value").get(&self.ident) {
+                // handle indexed assignment
+                for index in &self.indexes {
+                    match index {
+                        Postfix::Indexing(index_node) => {
+                            // inside of indexing it can only read from the context
+                            let index = index_node.eval(ctx.clone())?;
+                            val = val.index(&index)?;
+                        }
+                        _ => unreachable!(),
+                    }
+                }
+
+                // compute result
                 result = Expr::compute_infix(val, &result, &infix)?;
             } else {
                 return CashError::VariableNotFound(self.ident.clone()).boxed();
             }
         }
         if self.indexes.len() == 0 {
+            // only place that will ever write to the context
             ctx.write()
                 .expect("could not write value")
                 .set(&self.ident, (*result).clone());
             Ok(result)
         } else {
-            unimplemented!()
+            let mut indexes = Vec::with_capacity(self.indexes.len());
+            for index in &self.indexes {
+                match index {
+                    Postfix::Indexing(index_node) => {
+                        let index = index_node.eval(ctx.clone())?;
+                        indexes.push(index);
+                    }
+                    _ => unreachable!(),
+                }
+            }
+
+            let mut lock = ctx.write().expect("could not read value");
+            if let Some(mut val) = lock.get(&self.ident) {
+                val.indexed_set((*result).clone(), &indexes)?;
+                lock.set(&self.ident, val);
+                Ok(result)
+            } else {
+                return CashError::VariableNotFound(self.ident.clone()).boxed();
+            }
         }
     }
 }

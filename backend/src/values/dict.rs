@@ -18,6 +18,30 @@ impl Value for DictValue {
     fn get_type_name(&self) -> &'static str {
         "dict"
     }
+
+    fn indexed_set(
+        &mut self,
+        value: Box<dyn Value>,
+        indexes: &[Box<dyn Value>],
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        assert!(indexes.len() > 0);
+        let index = indexes[0].to_string();
+        if indexes.len() == 1 {
+            self.values.insert(index, value);
+            Ok(())
+        } else {
+            if self.values.contains_key(&index) {
+                let mut inner = self
+                    .values
+                    .get_mut(&index)
+                    .expect("cannot happen, was checked");
+                inner.indexed_set(value, &indexes[1..])
+            } else {
+                CashError::KeyNotFound(index, self.get_type_name().to_owned()).boxed()
+            }
+        }
+    }
+
     fn index(&self, index: &Box<dyn Value>) -> ValueResult {
         let index = index.to_string();
         if self.values.contains_key(&index) {

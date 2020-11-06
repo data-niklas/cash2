@@ -7,7 +7,7 @@ use crate::values::StringValue;
 #[derive(Debug)]
 pub struct Context {
     parent: Option<Arc<RwLock<Context>>>,
-    vars: HashMap<String, Arc<Box<dyn Value>>>,
+    vars: HashMap<String, Box<dyn Value>>,
 }
 
 impl Context {
@@ -33,7 +33,7 @@ impl Context {
             }
         }
         if self.vars.contains_key(key) {
-            return Some((**self.vars.get(key).unwrap()).clone());
+            return Some((*self.vars.get(key).unwrap()).clone());
         }
         if let Some(parent) = &self.parent {
             return parent
@@ -67,7 +67,7 @@ impl Context {
     }
 
     pub fn set_self(&mut self, key: &str, value: Box<dyn Value>) {
-        self.vars.insert(key.to_owned(), Arc::new(value));
+        self.vars.insert(key.to_owned(), value);
     }
 }
 

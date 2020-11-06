@@ -61,9 +61,9 @@ impl Runtime {
             tree.eval(self.ctx.clone()).expect("Could not eval value")
         );
         println!("{:?}", self.ctx);
-        for (key, value) in std::env::vars() {
-            println!("{}: {}", key, value);
-        }
+        // for (key, value) in std::env::vars() {
+        //     println!("{}: {}", key, value);
+        // }
     }
 }
 
@@ -76,7 +76,7 @@ mod tests {
         //runtime.interpret("$ echo('asd')".to_owned());
         //runtime.interpret("\"~hello\\nworld\\x134\"".to_owned());
         //runtime.interpret("[false, false, false]".to_owned());
-        runtime.interpret("$a = 2 >> 1 << 3".to_owned());
-        runtime.interpret("$a += \"a\"".to_owned());
+        runtime.interpret("a = [1,[0,1],[0,1]]".to_owned());
+        runtime.interpret("a[0] <== 3".to_owned());
     }
 }

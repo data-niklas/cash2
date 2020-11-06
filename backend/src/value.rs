@@ -4,8 +4,15 @@ use std::error::Error;
 
 pub type ValueResult = Result<Box<dyn Value>, Box<dyn Error>>;
 
-pub trait Value: DowncastSync + std::marker::Sync + std::fmt::Display + std::fmt::Debug {
+pub trait Value: DowncastSync + std::fmt::Display + std::fmt::Debug {
     fn get_type_name(&self) -> &'static str;
+    fn indexed_set(
+        &mut self,
+        _value: Box<dyn Value>,
+        _indexes: &[Box<dyn Value>],
+    ) -> Result<(), Box<dyn Error>> {
+        CashError::InvalidOperation("indexing".to_owned(), self.get_type_name().to_owned()).boxed()
+    }
     fn index(&self, _index: &Box<dyn Value>) -> ValueResult {
         CashError::InvalidOperation("indexing".to_owned(), self.get_type_name().to_owned()).boxed()
     }
