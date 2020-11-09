@@ -142,6 +142,16 @@ impl Value for StringValue {
     fn r#async(self: Box<Self>) -> ValueResult {
         unimplemented!();
     }
+
+    fn vec(self: Box<Self>) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error>> {
+        let mut vec: Vec<Box<dyn Value>> = Vec::new();
+        for c in self.value.chars() {
+            vec.push(Box::new(StringValue {
+                value: String::from(c),
+            }));
+        }
+        Ok(vec)
+    }
 }
 
 impl std::fmt::Display for StringValue {

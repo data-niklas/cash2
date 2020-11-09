@@ -29,6 +29,8 @@ pub fn make_ast(root: Pair<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::E
         Rule::Ident => Ident::parse(root),
         Rule::Block => Block::parse(root.into_inner()),
         Rule::Conditional => Conditional::parse(root.into_inner()),
+        Rule::WhileLoop => While::parse(root.into_inner()),
+        Rule::ForLoop => For::parse(root.into_inner()),
         _ => {
             unimplemented!();
         }

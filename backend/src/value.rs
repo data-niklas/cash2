@@ -109,6 +109,9 @@ pub trait Value: DowncastSync + std::fmt::Display + std::fmt::Debug {
         CashError::InvalidOperation("async".to_owned(), self.get_type_name().to_owned()).boxed()
     }
     fn clone(&self) -> Box<dyn Value>;
+    fn vec(self: Box<Self>) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error>> {
+        CashError::InvalidOperation("vec".to_owned(), self.get_type_name().to_owned()).boxed()
+    }
 }
 
 impl_downcast!(sync Value);

@@ -1,6 +1,6 @@
 use crate::error::CashError;
 use crate::value::{Value, ValueResult};
-use crate::values::BooleanValue;
+use crate::values::{BooleanValue, StringValue};
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -96,6 +96,16 @@ impl Value for DictValue {
             v.insert(key.to_owned(), (*value).clone());
         }
         Box::new(Self { values: v })
+    }
+
+    fn vec(self: Box<Self>) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error>> {
+        let mut vec: Vec<Box<dyn Value>> = Vec::new();
+        for key in self.values.keys() {
+            vec.push(Box::new(StringValue {
+                value: key.to_owned(),
+            }));
+        }
+        Ok(vec)
     }
 }
 

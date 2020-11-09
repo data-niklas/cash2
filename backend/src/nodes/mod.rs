@@ -1,14 +1,14 @@
 mod assignment;
+mod block;
+mod conditionals;
 mod expr;
 mod ident;
 mod literals;
-mod block;
-mod conditionals;
 mod loops;
 pub use assignment::*;
+pub use block::*;
+pub use conditionals::*;
 pub use expr::*;
 pub use ident::*;
 pub use literals::*;
-pub use block::*;
-pub use conditionals::*;
 pub use loops::*;

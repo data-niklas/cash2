@@ -18,7 +18,7 @@ impl Node for Block {
     ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
         let mut lastvalue = None;
         let ctx = Context::from_parent(ctx);
-        for statement in &self.statements{
+        for statement in &self.statements {
             lastvalue = Some(statement.eval(ctx.clone())?);
         }
         Ok(lastvalue.unwrap())
@@ -28,19 +28,17 @@ impl Node for Block {
 impl Block {
     pub fn parse(pairs: Pairs<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
         let mut statements = Vec::new();
-        for pair in pairs{
+        for pair in pairs {
             statements.push(make_ast(pair)?);
         }
-        Ok(Box::new(Self {
-            statements
-        }))
+        Ok(Box::new(Self { statements }))
     }
 }
 
 impl std::fmt::Display for Block {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut text = String::new();
-        for statement in &self.statements{
+        for statement in &self.statements {
             text.push_str(&statement.to_string());
         }
         write!(f, "Block '{}'", text)

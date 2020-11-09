@@ -20,12 +20,35 @@ pub struct Runtime {
 
 impl Runtime {
     pub fn new() -> Self {
-        Runtime {
+        let mut runtime = Runtime {
             ctx: Arc::new(RwLock::new(Context::root())),
+        };
+        {
+            let mut ctx = runtime.ctx.write().unwrap();
+            ctx.set(
+                "PI",
+                Box::new(values::FloatValue {
+                    value: std::f64::consts::PI,
+                }),
+            );
+            ctx.set(
+                "E",
+                Box::new(values::FloatValue {
+                    value: std::f64::consts::E,
+                }),
+            );
         }
+        runtime
     }
 
     pub fn interpret(&mut self, text: String) {
+        //A is used for debugging purposes
+        {
+            self.ctx
+                .write()
+                .unwrap()
+                .set("a", Box::new(values::BooleanValue { value: false }));
+        }
         let text = text.trim();
         let parse_result = rules::Language::parse(rules::Rule::Main, &text);
         if parse_result.is_err() {
@@ -50,7 +73,12 @@ impl Runtime {
             );
             return;
         }
-        let tree_result = ast::make_ast(root_node.into_inner().next().expect("Main should have a Block"));
+        let tree_result = ast::make_ast(
+            root_node
+                .into_inner()
+                .next()
+                .expect("Main should have a Block"),
+        );
         //println!("{:?}",tree_result);
         if tree_result.is_err() {
             println!("Error occured while parsing input: {:?}", tree_result);
@@ -79,7 +107,8 @@ mod tests {
         //runtime.interpret("[false, false, false]".to_owned());
         //runtime.interpret("a = [1,[0,1],[0,1]];a[1..3][0] = 3".to_owned());
         //runtime.interpret("".to_owned());
-        runtime.interpret(r#"#!/bin/env cash
+        runtime.interpret(
+            r#"#!/bin/env cash
         a = 4
         if a >= 5 | a < 3{
             7
@@ -90,6 +119,13 @@ mod tests {
         else{
             6
         }
-        "#.to_owned());
+        i = 0
+        a=0
+        for b in 1..101{
+            a+=b
+        }
+        "#
+            .to_owned(),
+        );
     }
 }

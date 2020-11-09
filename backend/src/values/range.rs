@@ -114,6 +114,14 @@ impl Value for RangeValue {
     fn r#async(self: Box<Self>) -> ValueResult {
         unimplemented!();
     }
+
+    fn vec(self: Box<Self>) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error>> {
+        let mut vec: Vec<Box<dyn Value>> = Vec::new();
+        for i in self.lower..self.upper {
+            vec.push(Box::new(IntegerValue { value: i }));
+        }
+        Ok(vec)
+    }
 }
 
 impl std::fmt::Display for RangeValue {

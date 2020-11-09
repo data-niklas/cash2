@@ -12,7 +12,7 @@ type If = (Box<dyn Node>, Box<dyn Node>);
 #[derive(Debug)]
 pub struct Conditional {
     pub ifblocks: Vec<If>,
-    pub elseblock: Option<Box<dyn Node>>
+    pub elseblock: Option<Box<dyn Node>>,
 }
 
 impl Node for Conditional {
@@ -21,22 +21,24 @@ impl Node for Conditional {
         ctx: Arc<RwLock<Context>>,
     ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
         let ctx = Context::from_parent(ctx);
-        for (expr, block) in &self.ifblocks{
+        for (expr, block) in &self.ifblocks {
             let val = expr.eval(ctx.clone())?;
-            if let Some(val) = val.downcast_ref::<BooleanValue>(){
-                if val.value{
+            if let Some(val) = val.downcast_ref::<BooleanValue>() {
+                if val.value {
                     return Ok(block.eval(ctx)?);
                 }
-            }
-            else{
+            } else {
                 //TODO Print type
-                return CashError::InvalidType(val.get_type_name().to_owned(), "condition".to_owned()).boxed();
+                return CashError::InvalidType(
+                    val.get_type_name().to_owned(),
+                    "condition".to_owned(),
+                )
+                .boxed();
             }
         }
-        if let Some(elseblock) = &self.elseblock{
+        if let Some(elseblock) = &self.elseblock {
             Ok(elseblock.eval(ctx)?)
-        }
-        else {
+        } else {
             BooleanValue::boxed(false)
         }
     }
@@ -46,26 +48,26 @@ impl Conditional {
     pub fn parse(pairs: Pairs<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
         let mut ifblocks = Vec::new();
         let mut elseblock = None;
-        for pair in pairs{
-            match pair.as_rule(){
+        for pair in pairs {
+            match pair.as_rule() {
                 Rule::If | Rule::Elif => {
                     let mut inner = pair.into_inner();
                     let expr = make_ast(inner.next().unwrap())?;
                     let block = make_ast(inner.next().unwrap())?;
                     ifblocks.push((expr, block));
-                },
+                }
                 Rule::Else => {
                     let block = make_ast(pair.into_inner().next().unwrap())?;
                     elseblock = Some(block);
                 }
                 _ => {
-                   return CashError::Bug("Conditional may not contain this".to_owned()).boxed();
+                    return CashError::Bug("Conditional may not contain this".to_owned()).boxed();
                 }
             }
         }
         Ok(Box::new(Self {
             ifblocks,
-            elseblock
+            elseblock,
         }))
     }
 }
@@ -73,11 +75,11 @@ impl Conditional {
 impl std::fmt::Display for Conditional {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut text = String::new();
-        for ifblock in &self.ifblocks{
+        for ifblock in &self.ifblocks {
             text.push_str(&format!("{} {}\n", ifblock.0, ifblock.1));
         }
-        if let Some(elseblock) = &self.elseblock{
-            text.push_str(&format!("{}",elseblock));
+        if let Some(elseblock) = &self.elseblock {
+            text.push_str(&format!("{}", elseblock));
         }
         write!(f, "Conditional '{}'", text)
     }

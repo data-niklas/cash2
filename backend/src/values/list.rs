@@ -123,7 +123,7 @@ impl Value for ListValue {
     }
     fn contains(&self, value: &Box<dyn Value>) -> ValueResult {
         for val in self.values.iter() {
-            if let Ok(boxed) = (*val).eq(value.clone()) {
+            if let Ok(boxed) = (*val).eq(value) {
                 if let Some(b) = boxed.downcast_ref::<BooleanValue>() {
                     if b.value {
                         return BooleanValue::boxed(true);
@@ -172,6 +172,10 @@ impl Value for ListValue {
             v.push((*value).clone());
         }
         Box::new(Self { values: v })
+    }
+
+    fn vec(self: Box<Self>) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error>> {
+        Ok(self.values)
     }
 }
 
