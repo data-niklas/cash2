@@ -106,23 +106,20 @@ mod tests {
         //runtime.interpret("".to_owned());
         runtime.interpret(
             r#"#!/bin/env cash
-        a = 4
-        a = {if a >= 5 | a < 3{
-            7
+        a = [1,2,3]
+        b = map(a, print)
+        print(b)
+        print(type(false))
+        print({"a": [1,2,3],"b":{"asd":false}})
+
+        times = (n)->{
+            (a)->{
+                a*n
+            }
         }
-        elif a in 3..10{
-            42
-        }
-        else{
-            6
-        }}
-        print(a)
-        i = 0
-        a=0
-        for b in 1..101{
-            a+=b
-        }
-        print(print('kick the fos'))
+        three = times(3)
+        three(9)
+
         "#
             .to_owned(),
         );

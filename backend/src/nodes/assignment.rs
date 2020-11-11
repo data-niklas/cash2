@@ -13,7 +13,7 @@ pub struct Assignment {
     pub ident: String,
     pub indexes: Vec<Postfix>,
     pub infix: Option<Infix>,
-    pub expr: Box<dyn Node>,
+    pub expr: Arc<dyn Node>,
 }
 
 impl Node for Assignment {
@@ -79,7 +79,7 @@ impl Node for Assignment {
 impl Assignment {
     pub fn parse_inner(
         mut pairs: Pairs<Rule>,
-    ) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
         let ident = pairs
             .next()
             .expect("Did not find identifier node")
@@ -103,7 +103,7 @@ impl Assignment {
                 }
             }
         }
-        Ok(Box::new(Assignment {
+        Ok(Arc::new(Assignment {
             ident,
             indexes,
             infix,

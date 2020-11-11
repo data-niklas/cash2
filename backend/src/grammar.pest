@@ -61,7 +61,7 @@ DoubleQuoteText = { (!("\"" | Interpolation | Escape) ~ ANY)+ }
 SingleQuoteText = {  (!("\'" | Escape) ~ ANY)+}
 
 
-Keyword = @{ "else" | "if" | "elif" | "while" | "for" | "in" } 
+Keyword = @{ "else" | "if" | "elif" | "while" | "for" | "in" | "return" | "break" | "continue" } 
 
 LineComment = _{ "#" ~ (!"\n" ~ ANY)* }
 MultilineComment = _{"/*" ~ (!"*/" ~ ANY)* ~ "*/"}

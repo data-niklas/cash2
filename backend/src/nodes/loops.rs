@@ -9,8 +9,8 @@ use std::sync::{Arc, RwLock};
 
 #[derive(Debug)]
 pub struct While {
-    pub condition: Box<dyn Node>,
-    pub block: Box<dyn Node>,
+    pub condition: Arc<dyn Node>,
+    pub block: Arc<dyn Node>,
 }
 
 impl Node for While {
@@ -41,10 +41,10 @@ impl Node for While {
 }
 
 impl While {
-    pub fn parse(mut pairs: Pairs<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse(mut pairs: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
         let condition = make_ast(pairs.next().expect("due to grammar.pest"))?;
         let block = make_ast(pairs.next().expect("due to grammar.pest"))?;
-        Ok(Box::new(Self { condition, block }))
+        Ok(Arc::new(Self { condition, block }))
     }
 }
 
@@ -59,8 +59,8 @@ impl std::fmt::Display for While {
 #[derive(Debug)]
 pub struct For {
     pub ident: String,
-    pub expr: Box<dyn Node>,
-    pub block: Box<dyn Node>,
+    pub expr: Arc<dyn Node>,
+    pub block: Arc<dyn Node>,
 }
 
 impl Node for For {
@@ -84,7 +84,7 @@ impl Node for For {
 }
 
 impl For {
-    pub fn parse(mut pairs: Pairs<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse(mut pairs: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
         let ident = pairs
             .next()
             .expect("due to grammar.pest")
@@ -93,7 +93,7 @@ impl For {
             .to_owned();
         let expr = make_ast(pairs.next().expect("due to grammar.pest"))?;
         let block = make_ast(pairs.next().expect("due to grammar.pest"))?;
-        Ok(Box::new(Self { ident, expr, block }))
+        Ok(Arc::new(Self { ident, expr, block }))
     }
 }
 

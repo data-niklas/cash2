@@ -25,8 +25,8 @@ impl Node for Ident {
 }
 
 impl Ident {
-    pub fn parse(pair: Pair<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
-        Ok(Box::new(Self {
+    pub fn parse(pair: Pair<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+        Ok(Arc::new(Self {
             ident: pair.as_span().as_str().to_owned(),
         }))
     }

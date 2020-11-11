@@ -7,12 +7,12 @@ use crate::values::{BooleanValue, NoneValue};
 use pest::iterators::Pairs;
 use std::sync::{Arc, RwLock};
 
-type If = (Box<dyn Node>, Box<dyn Node>);
+type If = (Arc<dyn Node>, Arc<dyn Node>);
 
 #[derive(Debug)]
 pub struct Conditional {
     pub ifblocks: Vec<If>,
-    pub elseblock: Option<Box<dyn Node>>,
+    pub elseblock: Option<Arc<dyn Node>>,
 }
 
 impl Node for Conditional {
@@ -45,7 +45,7 @@ impl Node for Conditional {
 }
 
 impl Conditional {
-    pub fn parse(pairs: Pairs<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse(pairs: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
         let mut ifblocks = Vec::new();
         let mut elseblock = None;
         for pair in pairs {
@@ -65,7 +65,7 @@ impl Conditional {
                 }
             }
         }
-        Ok(Box::new(Self {
+        Ok(Arc::new(Self {
             ifblocks,
             elseblock,
         }))

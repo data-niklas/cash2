@@ -18,6 +18,10 @@ pub enum CashError {
     InvalidInput(String),
     #[error("invalid value '{0}' in '{1}'")]
     InvalidValue(String, String),
+    #[error("invalid parameter count: found '{0}' parameters, but needs '{1}'")]
+    InvalidParameterCount(usize, usize),
+    #[error("invalid arguments: found '{0}', but needs '{1}'")]
+    InvalidArguments(String, String),
     #[error("{0}")]
     Bug(String),
 }

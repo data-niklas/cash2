@@ -8,7 +8,7 @@ use std::iter::Peekable;
 use std::slice::Iter;
 use std::sync::{Arc, RwLock};
 
-type Primary = (Vec<Prefix>, Box<dyn Node>, Vec<Postfix>);
+type Primary = (Vec<Prefix>, Arc<dyn Node>, Vec<Postfix>);
 
 #[derive(Debug)]
 pub struct Expr {
@@ -84,7 +84,7 @@ impl Expr {
 
     fn eval_primary(
         &self,
-        primary: &(Vec<Prefix>, Box<dyn Node>, Vec<Postfix>),
+        primary: &(Vec<Prefix>, Arc<dyn Node>, Vec<Postfix>),
         ctx: Arc<RwLock<Context>>,
     ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
         let (prefixes, value, postfixes) = primary;
@@ -148,7 +148,7 @@ impl std::fmt::Display for Expr {
 }
 
 impl Expr {
-    pub fn parse_inner(pairs: Pairs<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse_inner(pairs: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
         let mut values = Vec::new();
         let mut infixes = Vec::new();
         let mut prefixes = Vec::new();
@@ -193,7 +193,7 @@ impl Expr {
         }
         values.push((prefixes, primary.expect("Primary should exist"), postfixes));
 
-        Ok(Box::new(Expr { values, infixes }))
+        Ok(Arc::new(Expr { values, infixes }))
     }
 }
 
@@ -314,8 +314,8 @@ impl Infix {
 
 #[derive(Debug)]
 pub enum Postfix {
-    FunctionCall(Vec<Box<dyn Node>>),
-    Indexing(Box<dyn Node>),
+    FunctionCall(Vec<Arc<dyn Node>>),
+    Indexing(Arc<dyn Node>),
 }
 
 impl Postfix {

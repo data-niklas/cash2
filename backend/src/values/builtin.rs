@@ -36,7 +36,7 @@ impl<F: 'static + Fn(Vec<Box<dyn Value>>) -> ValueResult + Send + Sync> std::fmt
     for BuiltInFunction<F>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", "as")
+        write!(f, "{}", self.get_type_name())
     }
 }
 
@@ -44,6 +44,6 @@ impl<F: 'static + Fn(Vec<Box<dyn Value>>) -> ValueResult + Send + Sync> std::fmt
     for BuiltInFunction<F>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", "as")
+        write!(f, "{}", self.get_type_name())
     }
 }

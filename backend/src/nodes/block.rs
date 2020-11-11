@@ -7,7 +7,7 @@ use std::sync::{Arc, RwLock};
 
 #[derive(Debug)]
 pub struct Block {
-    pub statements: Vec<Box<dyn Node>>,
+    pub statements: Vec<Arc<dyn Node>>,
 }
 
 impl Node for Block {
@@ -25,12 +25,12 @@ impl Node for Block {
 }
 
 impl Block {
-    pub fn parse(pairs: Pairs<Rule>) -> Result<Box<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse(pairs: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
         let mut statements = Vec::new();
         for pair in pairs {
             statements.push(make_ast(pair)?);
         }
-        Ok(Box::new(Self { statements }))
+        Ok(Arc::new(Self { statements }))
     }
 }
 
