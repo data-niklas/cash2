@@ -3,7 +3,7 @@ use crate::context::Context;
 use crate::error::CashError;
 use crate::rules::Rule;
 use crate::value::Value;
-use crate::values::BooleanValue;
+use crate::values::{BooleanValue, NoneValue};
 use pest::iterators::Pairs;
 use std::sync::{Arc, RwLock};
 
@@ -19,7 +19,7 @@ impl Node for While {
         ctx: Arc<RwLock<Context>>,
     ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
         let ctx = Context::from_parent(ctx);
-        let mut lastvalue = BooleanValue::boxed(false);
+        let mut lastvalue = NoneValue::boxed();
         loop {
             let val = self.condition.eval(ctx.clone())?;
             if let Some(val) = val.downcast_ref::<BooleanValue>() {
@@ -68,7 +68,7 @@ impl Node for For {
         &self,
         ctx: Arc<RwLock<Context>>,
     ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
-        let mut lastvalue = BooleanValue::boxed(false);
+        let mut lastvalue = NoneValue::boxed();
         let values = self.expr.eval(ctx.clone())?.vec()?;
         for value in values {
             let ctx = Context::from_parent(ctx.clone());

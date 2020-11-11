@@ -159,7 +159,7 @@ impl Expr {
                 Rule::Prefix => {
                     prefixes.push(Prefix::parse(pair));
                 }
-                Rule::Expr | Rule::Capture => {
+                Rule::Expr | Rule::Capture | Rule::Block => {
                     primary = Some(make_ast(pair)?);
                 }
                 Rule::Literal => {

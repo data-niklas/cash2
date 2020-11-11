@@ -3,7 +3,7 @@ use crate::context::Context;
 use crate::error::CashError;
 use crate::rules::Rule;
 use crate::value::Value;
-use crate::values::BooleanValue;
+use crate::values::{BooleanValue, NoneValue};
 use pest::iterators::Pairs;
 use std::sync::{Arc, RwLock};
 
@@ -39,7 +39,7 @@ impl Node for Conditional {
         if let Some(elseblock) = &self.elseblock {
             Ok(elseblock.eval(ctx)?)
         } else {
-            BooleanValue::boxed(false)
+            NoneValue::boxed()
         }
     }
 }

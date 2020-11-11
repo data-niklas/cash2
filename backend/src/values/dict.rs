@@ -31,7 +31,7 @@ impl Value for DictValue {
             Ok(())
         } else {
             if self.values.contains_key(&index) {
-                let mut inner = self
+                let inner = self
                     .values
                     .get_mut(&index)
                     .expect("cannot happen, was checked");

@@ -1,6 +1,5 @@
 use crate::ast::*;
 use crate::context::Context;
-use crate::error::CashError;
 use crate::rules::Rule;
 use crate::value::Value;
 use pest::iterators::Pairs;

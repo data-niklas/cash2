@@ -20,7 +20,7 @@ pub struct Runtime {
 
 impl Runtime {
     pub fn new() -> Self {
-        let mut runtime = Runtime {
+        let runtime = Runtime {
             ctx: Arc::new(RwLock::new(Context::root())),
         };
         {
@@ -85,14 +85,11 @@ impl Runtime {
             return;
         }
         let tree = tree_result.expect("Cannot happen: tested by if");
-        println!(
-            "{}",
-            tree.eval(self.ctx.clone()).expect("Could not eval value")
-        );
-        println!("{:?}", self.ctx);
-        // for (key, value) in std::env::vars() {
-        //     println!("{}: {}", key, value);
-        // }
+        let tree_result = tree.eval(self.ctx.clone()).expect("Could not eval value");
+        if tree_result.get_type_name() == "none" {
+        } else {
+            println!("{}", tree_result);
+        }
     }
 }
 
@@ -110,7 +107,7 @@ mod tests {
         runtime.interpret(
             r#"#!/bin/env cash
         a = 4
-        if a >= 5 | a < 3{
+        a = {if a >= 5 | a < 3{
             7
         }
         elif a in 3..10{
@@ -118,12 +115,14 @@ mod tests {
         }
         else{
             6
-        }
+        }}
+        print(a)
         i = 0
         a=0
         for b in 1..101{
             a+=b
         }
+        print(print('kick the fos'))
         "#
             .to_owned(),
         );

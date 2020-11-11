@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
+use crate::cashstd;
 use crate::value::Value;
 use crate::values::StringValue;
 
@@ -36,12 +37,16 @@ impl Context {
             return Some((*self.vars.get(key).unwrap()).clone());
         }
         if let Some(parent) = &self.parent {
-            return parent
+            if let Some(val) = parent
                 .read()
                 .expect("COULD NOT READ VAR OUT OF HASHMAP!!!")
-                .get(key);
+                .get(key)
+            {
+                return Some(val);
+            }
         }
-        None
+        // None
+        cashstd::get_stdlib_function(key)
     }
 
     pub fn set(&mut self, key: &str, value: Box<dyn Value>) {
