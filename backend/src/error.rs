@@ -22,6 +22,8 @@ pub enum CashError {
     InvalidParameterCount(usize, usize),
     #[error("invalid arguments: found '{0}', but needs '{1}'")]
     InvalidArguments(String, String),
+    #[error("parse error: '{0}'")]
+    ParseError(String),
     #[error("{0}")]
     Bug(String),
 }

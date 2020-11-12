@@ -1,8 +1,9 @@
-Main = { ( LineComment | MultilineComment | "\n")* ~ Block ~ ( LineComment | MultilineComment | "\n")* }
+Main = { ( LineComment | MultilineComment | "\n")* ~ RootBlock ~ ( LineComment | MultilineComment | "\n")* }
 Block = { NewLines ~ Statement ~ (Divider ~ NewLines ~ Statement)* ~ NewLines }
 Divider = _{ "\n" | ";" | EOI }
 NewLines = _{ "\n"* }
 
+RootBlock = { Block }
 WrappedBlock = _{ "{" ~ Block ~ "}"}
 Statement = _{ WhileLoop | ForLoop | Conditional | WrappedBlock | Assignment | ("$" ~ Pipe) | Expr }
 Assignment = { Ident ~ Indexing* ~ Infix? ~ "=" ~ Expr }

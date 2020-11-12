@@ -330,7 +330,7 @@ impl StringLiteral {
 #[derive(Debug)]
 pub struct FunctionLiteral {
     pub node: Arc<dyn Node>,
-    pub params: Vec<(String, Option<Arc<dyn Node>>)>
+    pub params: Vec<(String, Option<Arc<dyn Node>>)>,
 }
 
 impl Node for FunctionLiteral {
@@ -356,32 +356,44 @@ impl std::fmt::Display for FunctionLiteral {
 }
 
 impl FunctionLiteral {
-    pub fn parse_inner(mut pairs: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse_inner(
+        mut pairs: Pairs<Rule>,
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
         let first = pairs.next().unwrap();
         let mut params = Vec::new();
         let block;
-        if first.as_rule() == Rule::FunctionParams{
+        if first.as_rule() == Rule::FunctionParams {
             block = make_ast(pairs.next().unwrap())?;
-            for param in first.into_inner(){
+            for param in first.into_inner() {
                 let mut inner = param.into_inner();
                 let name = inner.next().unwrap().as_span().as_str().to_owned();
-                let default_value = match inner.next(){
+                let default_value = match inner.next() {
                     None => None,
-                    Some(value) => {
-                        Some(make_ast(value)?)
-                    }
+                    Some(value) => Some(match value.as_rule() {
+                        Rule::Literal => make_ast(
+                            value
+                                .into_inner()
+                                .next()
+                                .expect("Literal should contain node"),
+                        )?,
+                        Rule::Ident => make_ast(value)?,
+                        _ => {
+                            return CashError::Bug(
+                                "Function marker should not contain other rule".to_owned(),
+                            )
+                            .boxed();
+                        }
+                    }),
                 };
                 params.push((name, default_value));
             }
-        }
-        else{
+        } else {
             block = make_ast(first)?;
         }
 
-        Ok(Arc::new(FunctionLiteral{
+        Ok(Arc::new(FunctionLiteral {
             node: block,
-            params
+            params,
         }))
     }
 }
-

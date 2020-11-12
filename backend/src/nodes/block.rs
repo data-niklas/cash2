@@ -8,6 +8,7 @@ use std::sync::{Arc, RwLock};
 #[derive(Debug)]
 pub struct Block {
     pub statements: Vec<Arc<dyn Node>>,
+    pub is_root: bool,
 }
 
 impl Node for Block {
@@ -16,21 +17,32 @@ impl Node for Block {
         ctx: Arc<RwLock<Context>>,
     ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
         let mut lastvalue = None;
-        let ctx = Context::from_parent(ctx);
+        let ctxt;
+        if !self.is_root {
+            ctxt = Context::from_parent(ctx);
+        } else {
+            ctxt = ctx;
+        }
         for statement in &self.statements {
-            lastvalue = Some(statement.eval(ctx.clone())?);
+            lastvalue = Some(statement.eval(ctxt.clone())?);
         }
         Ok(lastvalue.unwrap())
     }
 }
 
 impl Block {
-    pub fn parse(pairs: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse(
+        pairs: Pairs<Rule>,
+        is_root: bool,
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
         let mut statements = Vec::new();
         for pair in pairs {
             statements.push(make_ast(pair)?);
         }
-        Ok(Arc::new(Self { statements }))
+        Ok(Arc::new(Self {
+            statements,
+            is_root,
+        }))
     }
 }
 

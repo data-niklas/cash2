@@ -9,3 +9,5 @@ edition = "2018"
 [dependencies]
 futures = "0.3"
 smol = "1.2.4"
+rustyline = "6.3.0"
+backend = {path = "../backend"}

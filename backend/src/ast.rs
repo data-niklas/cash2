@@ -28,12 +28,14 @@ pub fn make_ast(root: Pair<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::E
         Rule::Expr => Expr::parse_inner(root.into_inner()),
         Rule::Assignment => Assignment::parse_inner(root.into_inner()),
         Rule::Ident => Ident::parse(root),
-        Rule::Block => Block::parse(root.into_inner()),
+        Rule::Block => Block::parse(root.into_inner(), false),
+        Rule::RootBlock => Block::parse(root.into_inner().next().unwrap().into_inner(), true),
         Rule::Conditional => Conditional::parse(root.into_inner()),
         Rule::WhileLoop => While::parse(root.into_inner()),
         Rule::ForLoop => For::parse(root.into_inner()),
         Rule::Function => FunctionLiteral::parse_inner(root.into_inner()),
         _ => {
+            println!("{:?}", root);
             unimplemented!();
         }
     }

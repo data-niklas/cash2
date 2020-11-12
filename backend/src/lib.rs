@@ -12,7 +12,9 @@ mod value;
 mod values;
 
 use context::Context;
+use error::CashError;
 use pest::Parser;
+use value::Value;
 
 pub struct Runtime {
     ctx: Arc<RwLock<Context>>,
@@ -41,37 +43,39 @@ impl Runtime {
         runtime
     }
 
-    pub fn interpret(&mut self, text: String) {
+    pub fn interpret(
+        &mut self,
+        text: String,
+    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
         //A is used for debugging purposes
-        {
-            self.ctx
-                .write()
-                .unwrap()
-                .set("a", Box::new(values::BooleanValue { value: false }));
-        }
+
         let text = text.trim();
         let parse_result = rules::Language::parse(rules::Rule::Main, &text);
         if parse_result.is_err() {
-            println!("Error occured while parsing input: {:?}", parse_result);
-            return;
+            return CashError::ParseError(format!(
+                "Error occured while parsing input: {:?}",
+                parse_result
+            ))
+            .boxed();
         }
         let parse_tree = parse_result.expect("Cannot happen: tested by if");
         let mut root_nodes = parse_tree.collect::<Vec<_>>();
         if root_nodes.len() != 1 {
-            println!("Error occured while parsing input: Not exactly one root node");
-            return;
+            return CashError::ParseError(
+                "Error occured while parsing input: Not exactly one root node".to_owned(),
+            )
+            .boxed();
         }
         let root_node = root_nodes.remove(0);
         let root_span = root_node.as_span();
         if root_span.start() != 0 || root_span.end() != text.len() {
-            println!("Error occured while parsing input: Not all of the input was consumed");
-            println!(
-                "Consumed from {} to {}: {}",
-                root_span.start(),
-                root_span.end(),
-                root_span.as_str()
-            );
-            return;
+            return CashError::ParseError(
+                format!("Error occured while parsing input: Not all of the input was consumed\nConsumed from {} to {}: {}",
+                    root_span.start(),
+                    root_span.end(),
+                    root_span.as_str()
+                )
+            ).boxed();
         }
         let tree_result = ast::make_ast(
             root_node
@@ -81,15 +85,14 @@ impl Runtime {
         );
         //println!("{:?}",tree_result);
         if tree_result.is_err() {
-            println!("Error occured while parsing input: {:?}", tree_result);
-            return;
+            return CashError::ParseError(format!(
+                "Error occured while parsing input: {:?}",
+                tree_result
+            ))
+            .boxed();
         }
         let tree = tree_result.expect("Cannot happen: tested by if");
-        let tree_result = tree.eval(self.ctx.clone()).expect("Could not eval value");
-        if tree_result.get_type_name() == "none" {
-        } else {
-            println!("{}", tree_result);
-        }
+        tree.eval(self.ctx.clone())
     }
 }
 
