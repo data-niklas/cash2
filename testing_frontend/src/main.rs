@@ -9,6 +9,27 @@ fn main() {
     /*if rl.load_history("history.txt").is_err() {
         println!("No previous history.");
     }*/
+
+    let args = std::env::args().collect::<Vec<_>>();
+    if args.len() > 2 {
+        println!("Error: Usage is `cash filename` or `cash`");
+        return;
+    }
+    if args.len() == 2 {
+        let contents = std::fs::read_to_string(&args[1]).expect("Errored while reading file!");
+        match rt.interpret(contents) {
+            Ok(tree_result) => {
+                if tree_result.get_type_name() == "none" {
+                } else {
+                    // println!("{}", tree_result);
+                }
+            }
+            Err(err) => {
+                println!("{}", err);
+            }
+        }
+    }
+
     loop {
         let readline = rl.readline("> ");
         match readline {

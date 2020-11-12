@@ -1,26 +1,26 @@
-Main = { ( LineComment | MultilineComment | "\n")* ~ RootBlock ~ ( LineComment | MultilineComment | "\n")* }
+Main = { ( LineComment | MultilineComment | NEWLINE)* ~ RootBlock ~ ( LineComment | MultilineComment | NEWLINE)* }
 Block = { NewLines ~ Statement ~ (Divider ~ NewLines ~ Statement)* ~ NewLines }
-Divider = _{ "\n" | ";" | EOI }
-NewLines = _{ "\n"* }
+Divider = _{ NEWLINE | ";" | EOI }
+NewLines = _{ NEWLINE* }
 
 RootBlock = { Block }
-WrappedBlock = _{ "{" ~ Block ~ "}"}
-Statement = _{ WhileLoop | ForLoop | Conditional | WrappedBlock | Assignment | ("$" ~ Pipe) | Expr }
+WrappedBlock = _{ "{" ~ NewLines ~ Block ~ NewLines ~ "}"}
+Statement = _{ WhileLoop | ForLoop | Conditional | Assignment | WrappedBlock | ("$" ~ Pipe) | Expr }
 Assignment = { Ident ~ Indexing* ~ Infix? ~ "=" ~ Expr }
 ForLoop = { "for" ~ Ident ~ "in" ~ Expr ~ WrappedBlock }
 WhileLoop = { "while" ~ Expr ~ WrappedBlock }
-Conditional = {If ~ NewLines ~ (Elif | "\n"+ )* ~ Else?}
+Conditional = {If ~ NewLines ~ (Elif | NEWLINE+ )* ~ Else?}
 If = { "if" ~ Expr ~ WrappedBlock }
 Elif = { "elif" ~ Expr ~ WrappedBlock }
 Else = { "else" ~ WrappedBlock }
 
 
 Expr = { Prefix* ~ Primary ~ Postfix* ~ (Infix ~ Prefix* ~ Primary ~ Postfix*)* }
-Primary = _{ Literal | Paren | Capture | Ident | WrappedBlock}
+Primary = _{ Literal | Ident | Paren | Capture | WrappedBlock}
 Pipe = { PipeCall ~ ( "|" ~ PipeCall)* }
 PipeCall = { Ident ~ FunctionCall}
 Capture = { "$" ~ Pipe }
-Literal = { Range | Float | Int | String | Bool | List | Dict | Function }
+Literal = { Function | Range | Float | Int | String | Bool | List | Dict }
 Paren = _{ "(" ~ Expr ~ ")" }
 
 Infix = { "<<" | ">>" | "**" | "+" | "-" | "*" | "/" | "%" | "!=" | "==" | "<=" | ">=" | "<" | ">" | "&" | "|" | "^" | "in" }
@@ -64,7 +64,7 @@ SingleQuoteText = {  (!("\'" | Escape) ~ ANY)+}
 
 Keyword = @{ "else" | "if" | "elif" | "while" | "for" | "in" | "return" | "break" | "continue" } 
 
-LineComment = _{ "#" ~ (!"\n" ~ ANY)* }
+LineComment = _{ "#" ~ (!NEWLINE ~ ANY)* }
 MultilineComment = _{"/*" ~ (!"*/" ~ ANY)* ~ "*/"}
 WHITESPACE = _{ " " | "\t" }
 COMMENT = _{ MultilineComment | LineComment }
