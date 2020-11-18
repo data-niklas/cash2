@@ -70,10 +70,10 @@ impl Value for FloatValue {
     fn modulo(mut self: Box<Self>, value: &Box<dyn Value>) -> ValueResult {
         let typename = value.get_type_name();
         if let Some(other) = value.downcast_ref::<FloatValue>() {
-            self.value = self.value % other.value;
+            self.value %= other.value;
             Ok(self)
         } else if let Some(other) = value.downcast_ref::<IntegerValue>() {
-            self.value = self.value % other.value as f64;
+            self.value %= other.value as f64;
             Ok(self)
         } else {
             CashError::InvalidOperation("modulo".to_owned(), "float ".to_owned() + typename).boxed()

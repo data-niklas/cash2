@@ -24,21 +24,19 @@ impl Value for DictValue {
         value: Box<dyn Value>,
         indexes: &[Box<dyn Value>],
     ) -> Result<(), Box<dyn std::error::Error>> {
-        assert!(indexes.len() > 0);
+        assert!(!indexes.is_empty());
         let index = indexes[0].to_string();
         if indexes.len() == 1 {
             self.values.insert(index, value);
             Ok(())
+        } else if self.values.contains_key(&index) {
+            let inner = self
+                .values
+                .get_mut(&index)
+                .expect("cannot happen, was checked");
+            inner.indexed_set(value, &indexes[1..])
         } else {
-            if self.values.contains_key(&index) {
-                let inner = self
-                    .values
-                    .get_mut(&index)
-                    .expect("cannot happen, was checked");
-                inner.indexed_set(value, &indexes[1..])
-            } else {
-                CashError::KeyNotFound(index, self.get_type_name().to_owned()).boxed()
-            }
+            CashError::KeyNotFound(index, self.get_type_name().to_owned()).boxed()
         }
     }
 

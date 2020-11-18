@@ -27,9 +27,7 @@ impl ListValue {
                 BooleanValue::boxed(true)
             }
         } else if let Some(other) = index.downcast_ref::<RangeValue>() {
-            if other.lower < 0 {
-                BooleanValue::boxed(false)
-            } else if other.upper > self.values.len() as i64 {
+            if other.lower < 0 || other.upper > self.values.len() as i64 {
                 BooleanValue::boxed(false)
             } else {
                 let mut v = Vec::with_capacity((other.upper - other.lower) as usize);
@@ -58,7 +56,7 @@ impl Value for ListValue {
         value: Box<dyn Value>,
         indexes: &[Box<dyn Value>],
     ) -> Result<(), Box<dyn std::error::Error>> {
-        assert!(indexes.len() > 0);
+        assert!(!indexes.is_empty());
         if let Some(other) = indexes[0].downcast_ref::<IntegerValue>() {
             let index: usize;
             if other.value < 0 {
@@ -68,13 +66,11 @@ impl Value for ListValue {
             }
             if index >= self.values.len() || -other.value > self.values.len() as i64 {
                 CashError::IndexOutOfBounds(other.value, self.get_type_name().to_owned()).boxed()
+            } else if indexes.len() == 1 {
+                self.values[index] = value;
+                Ok(())
             } else {
-                if indexes.len() == 1 {
-                    self.values[index] = value;
-                    Ok(())
-                } else {
-                    self.values[index].indexed_set(value, &indexes[1..])
-                }
+                self.values[index].indexed_set(value, &indexes[1..])
             }
         } else if let Some(other) = indexes[0].downcast_ref::<RangeValue>() {
             if other.lower < 0 {

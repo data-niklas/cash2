@@ -21,12 +21,12 @@ impl Value for NoneValue {
 
 impl std::fmt::Debug for NoneValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", "none")
+        write!(f, "none")
     }
 }
 
 impl std::fmt::Display for NoneValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", "none")
+        write!(f, "none")
     }
 }

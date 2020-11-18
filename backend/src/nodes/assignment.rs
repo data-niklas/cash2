@@ -46,7 +46,7 @@ impl Node for Assignment {
                 return CashError::VariableNotFound(self.ident.clone()).boxed();
             }
         }
-        if self.indexes.len() == 0 {
+        if self.indexes.is_empty() {
             // only place that will ever write to the context
             ctx.write()
                 .expect("could not write value")
@@ -70,7 +70,7 @@ impl Node for Assignment {
                 lock.set(&self.ident, val);
                 Ok(result)
             } else {
-                return CashError::VariableNotFound(self.ident.clone()).boxed();
+                CashError::VariableNotFound(self.ident.clone()).boxed()
             }
         }
     }

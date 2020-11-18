@@ -26,7 +26,7 @@ impl Context {
     }
 
     pub fn get(&self, key: &str) -> Option<Box<dyn Value>> {
-        if key.starts_with("$") {
+        if key.starts_with('$') {
             if let Ok(val) = std::env::var(&key[1..]) {
                 return Some(Box::new(StringValue { value: val }));
             } else {
@@ -50,7 +50,7 @@ impl Context {
     }
 
     pub fn set(&mut self, key: &str, value: Box<dyn Value>) {
-        if key.starts_with("$") {
+        if key.starts_with('$') {
             std::env::set_var(&key[1..], &value.to_string());
             return;
         }
@@ -72,8 +72,8 @@ impl Context {
     }
 
     pub fn exists(&self, key: &str) -> bool {
-        if key.starts_with("$") {
-            if let Ok(_) = std::env::var(&key[1..]) {
+        if key.starts_with('$') {
+            if std::env::var(&key[1..]).is_ok() {
                 return true;
             } else {
                 return false;

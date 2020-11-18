@@ -24,13 +24,13 @@ impl Value for ReturnValue {
 
 impl std::fmt::Debug for ReturnValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", "returnvalue")
+        write!(f, "returnvalue")
     }
 }
 
 impl std::fmt::Display for ReturnValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", "returnvalue")
+        write!(f, "returnvalue")
     }
 }
 
@@ -58,13 +58,13 @@ impl Value for BreakValue {
 
 impl std::fmt::Debug for BreakValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", "breakvalue")
+        write!(f, "breakvalue")
     }
 }
 
 impl std::fmt::Display for BreakValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", "breakvalue")
+        write!(f, "breakvalue")
     }
 }
 
@@ -92,12 +92,12 @@ impl Value for ContinueValue {
 
 impl std::fmt::Debug for ContinueValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", "continuevalue")
+        write!(f, "continuevalue")
     }
 }
 
 impl std::fmt::Display for ContinueValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", "continuevalue")
+        write!(f, "continuevalue")
     }
 }

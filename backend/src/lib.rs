@@ -20,6 +20,12 @@ pub struct Runtime {
     ctx: Arc<RwLock<Context>>,
 }
 
+impl Default for Runtime {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Runtime {
     pub fn new() -> Self {
         let runtime = Runtime {
