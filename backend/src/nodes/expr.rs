@@ -96,7 +96,7 @@ impl Expr {
                     for node in nodes {
                         args.push(node.eval(ctx.clone())?);
                     }
-                    value = value.call(args)?;
+                    value = value.call(args, ctx.clone())?;
                 }
                 Postfix::Indexing(node) => {
                     let arg: Box<dyn Value> = node.eval(ctx.clone())?;

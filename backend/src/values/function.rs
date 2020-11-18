@@ -19,7 +19,7 @@ impl Value for FunctionValue {
         "function"
     }
 
-    fn call(&self, params: Vec<Box<dyn Value>>) -> ValueResult {
+    fn call(&self, params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
         let ctx = Context::from_parent(self.ctx.clone());
         let param_count = params.len();
         if param_count > self.params.len() {

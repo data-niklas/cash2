@@ -1,8 +1,10 @@
 use crate::error::CashError;
 use crate::value::{Value, ValueResult};
+use crate::context::Context;
 use crate::values::{BooleanValue, DictValue, FloatValue, IntegerValue, ListValue, NoneValue};
+use std::sync::{RwLock, Arc};
 
-pub fn sqrt_closure(mut params: Vec<Box<dyn Value>>) -> ValueResult {
+pub fn sqrt_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();

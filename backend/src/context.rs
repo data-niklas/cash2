@@ -71,6 +71,30 @@ impl Context {
         self.set_self(key, value);
     }
 
+    pub fn exists(&self, key: &str) -> bool {
+        if key.starts_with("$") {
+            if let Ok(_) = std::env::var(&key[1..]) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        if self.vars.contains_key(key) {
+            return true;
+        }
+        if let Some(parent) = &self.parent {
+            if parent
+                .read()
+                .expect("COULD NOT READ VAR OUT OF HASHMAP!!!")
+                .exists(key)
+            {
+                return true;
+            }
+        }
+        // None
+        cashstd::get_stdlib_function(key).is_some()
+    }
+
     pub fn set_self(&mut self, key: &str, value: Box<dyn Value>) {
         self.vars.insert(key.to_owned(), value);
     }

@@ -11,6 +11,41 @@ impl ListValue {
     pub fn boxed(values: Vec<Box<dyn Value>>) -> ValueResult {
         Ok(Box::new(ListValue { values }))
     }
+
+    pub fn exists(&self, index: &Box<dyn Value>) -> ValueResult {
+        let typename = index.get_type_name();
+        if let Some(other) = index.downcast_ref::<IntegerValue>() {
+            let index: usize;
+            if other.value < 0 {
+                index = (self.values.len() as i64 + other.value) as usize;
+            } else {
+                index = other.value as usize;
+            }
+            if index >= self.values.len() || -other.value > self.values.len() as i64 {
+                BooleanValue::boxed(false)
+            } else {
+                BooleanValue::boxed(true)
+            }
+        } else if let Some(other) = index.downcast_ref::<RangeValue>() {
+            if other.lower < 0 {
+                BooleanValue::boxed(false)
+            } else if other.upper > self.values.len() as i64 {
+                BooleanValue::boxed(false)
+            } else {
+                let mut v = Vec::with_capacity((other.upper - other.lower) as usize);
+                let _ = self
+                    .values
+                    .iter()
+                    .skip(other.lower as usize)
+                    .take((other.upper - other.lower) as usize)
+                    .map(|val| v.push((*val).clone()))
+                    .collect::<Vec<_>>();
+                BooleanValue::boxed(true)
+            }
+        } else {
+            CashError::InvalidOperation("index".to_owned(), "string ".to_owned() + typename).boxed()
+        }
+    }
 }
 
 impl Value for ListValue {
