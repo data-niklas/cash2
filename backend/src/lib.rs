@@ -83,7 +83,7 @@ impl Runtime {
                 .next()
                 .expect("Main should have a Block"),
         );
-        //println!("{:?}",tree_result);
+        // println!("{:?}",tree_result);
         if tree_result.is_err() {
             return CashError::ParseError(format!(
                 "Error occured while parsing input: {:?}",

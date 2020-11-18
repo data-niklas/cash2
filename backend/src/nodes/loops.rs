@@ -3,7 +3,7 @@ use crate::context::Context;
 use crate::error::CashError;
 use crate::rules::Rule;
 use crate::value::Value;
-use crate::values::{BooleanValue, NoneValue};
+use crate::values::{BooleanValue, BreakValue, ContinueValue, NoneValue};
 use pest::iterators::Pairs;
 use std::sync::{Arc, RwLock};
 
@@ -24,7 +24,17 @@ impl Node for While {
             let val = self.condition.eval(ctx.clone())?;
             if let Some(val) = val.downcast_ref::<BooleanValue>() {
                 if val.value {
-                    lastvalue = Ok(self.block.eval(ctx.clone())?);
+                    let mut value = self.block.eval(ctx.clone())?;
+                    if value.get_type_name() == "break" {
+                        let value = value.downcast::<BreakValue>().unwrap();
+                        return Ok(value.value);
+                    } else if value.get_type_name() == "return" {
+                        return Ok(value);
+                    } else if value.get_type_name() == "continue" {
+                        let val = value.downcast::<ContinueValue>().unwrap();
+                        value = val.value;
+                    }
+                    lastvalue = Ok(value);
                 } else {
                     return lastvalue;
                 }
@@ -77,7 +87,17 @@ impl Node for For {
                     .expect("Could not write to context")
                     .set(&self.ident, value);
             }
-            lastvalue = Ok(self.block.eval(ctx)?);
+            let mut value = self.block.eval(ctx)?;
+            if value.get_type_name() == "break" {
+                let value = value.downcast::<BreakValue>().unwrap();
+                return Ok(value.value);
+            } else if value.get_type_name() == "return" {
+                return Ok(value);
+            } else if value.get_type_name() == "continue" {
+                let val = value.downcast::<ContinueValue>().unwrap();
+                value = val.value;
+            }
+            lastvalue = Ok(value);
         }
         lastvalue
     }

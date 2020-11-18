@@ -397,3 +397,20 @@ impl FunctionLiteral {
         }))
     }
 }
+
+#[derive(Debug, Default)]
+pub struct NoneLiteral;
+
+impl Node for NoneLiteral {
+    fn eval(
+        &self,
+        _ctx: Arc<RwLock<Context>>,
+    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+        NoneValue::boxed()
+    }
+}
+impl std::fmt::Display for NoneLiteral {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "NoneLiteral")
+    }
+}

@@ -34,6 +34,7 @@ pub fn make_ast(root: Pair<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::E
         Rule::WhileLoop => While::parse(root.into_inner()),
         Rule::ForLoop => For::parse(root.into_inner()),
         Rule::Function => FunctionLiteral::parse_inner(root.into_inner()),
+        Rule::KeywordStatement => KeywordStatement::parse_inner(root.into_inner()),
         _ => {
             println!("{:?}", root);
             unimplemented!();

@@ -2,7 +2,6 @@ use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, DictValue, FloatValue, IntegerValue, ListValue, NoneValue};
 
-
 pub fn sqrt_closure(mut params: Vec<Box<dyn Value>>) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
@@ -11,14 +10,13 @@ pub fn sqrt_closure(mut params: Vec<Box<dyn Value>>) -> ValueResult {
             "float" => {
                 let first = first.downcast::<FloatValue>().unwrap();
                 FloatValue::boxed(first.value.sqrt())
-            },
+            }
             "integer" => {
                 let first = first.downcast::<IntegerValue>().unwrap();
                 FloatValue::boxed((first.value as f64).sqrt())
             }
-            _ => {
-                CashError::InvalidArguments(type_name.to_owned(), "Float or Integer".to_owned()).boxed()
-            }
+            _ => CashError::InvalidArguments(type_name.to_owned(), "Float or Integer".to_owned())
+                .boxed(),
         }
     } else {
         CashError::InvalidParameterCount(params.len(), 1).boxed()

@@ -1,11 +1,16 @@
 Main = { ( LineComment | MultilineComment | NEWLINE)* ~ RootBlock ~ ( LineComment | MultilineComment | NEWLINE)* }
-Block = { NewLines ~ Statement ~ (Divider ~ NewLines ~ Statement)* ~ NewLines }
+Block = { NewLines ~ Statement ~ (Divider ~ NewLines ~ Statement)* ~ ";"? ~ NewLines }
 Divider = _{ NEWLINE | ";" | EOI }
 NewLines = _{ NEWLINE* }
 
 RootBlock = { Block }
 WrappedBlock = _{ "{" ~ NewLines ~ Block ~ NewLines ~ "}"}
-Statement = _{ WhileLoop | ForLoop | Conditional | Assignment | WrappedBlock | ("$" ~ Pipe) | Expr }
+NonKeywordStatement = _{ WhileLoop | ForLoop | Conditional | Assignment | WrappedBlock | ("$" ~ Pipe) | Expr }
+KeywordStatement = { (Return ~ NonKeywordStatement) | ((Break | Continue) ~ NonKeywordStatement?) }
+Return = {"return"}
+Break = {"break"}
+Continue = {"continue"}
+Statement = _{ NonKeywordStatement | KeywordStatement }
 Assignment = { Ident ~ Indexing* ~ Infix? ~ "=" ~ Expr }
 ForLoop = { "for" ~ Ident ~ "in" ~ Expr ~ WrappedBlock }
 WhileLoop = { "while" ~ Expr ~ WrappedBlock }

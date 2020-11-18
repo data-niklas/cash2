@@ -3,7 +3,6 @@ use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::{BuiltInFunction, NoneValue, StringValue};
 
-
 fn print_closure(params: Vec<Box<dyn Value>>) -> ValueResult {
     for param in params {
         print!("{}", param);

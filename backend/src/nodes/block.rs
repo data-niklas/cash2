@@ -2,6 +2,7 @@ use crate::ast::*;
 use crate::context::Context;
 use crate::rules::Rule;
 use crate::value::Value;
+use crate::values::ReturnValue;
 use pest::iterators::Pairs;
 use std::sync::{Arc, RwLock};
 
@@ -24,7 +25,19 @@ impl Node for Block {
             ctxt = ctx;
         }
         for statement in &self.statements {
-            lastvalue = Some(statement.eval(ctxt.clone())?);
+            let value = statement.eval(ctxt.clone())?;
+            if value.get_type_name() == "return" {
+                if self.is_root {
+                    let value = value
+                        .downcast::<ReturnValue>()
+                        .expect("Cannot happen or did any other type return the name 'return'?");
+                    return Ok(value.value);
+                }
+                return Ok(value);
+            } else if value.get_type_name() == "break" || value.get_type_name() == "continue" {
+                return Ok(value);
+            }
+            lastvalue = Some(value);
         }
         Ok(lastvalue.unwrap())
     }

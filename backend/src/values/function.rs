@@ -1,6 +1,7 @@
 use crate::ast::Node;
 use crate::context::Context;
 use crate::value::{Value, ValueResult};
+use crate::values::ReturnValue;
 
 use crate::error::CashError;
 
@@ -39,7 +40,13 @@ impl Value for FunctionValue {
                 }
             }
         }
-        self.node.eval(ctx)
+        let value = self.node.eval(ctx)?;
+        if value.get_type_name() == "return" {
+            let value = value.downcast::<ReturnValue>().unwrap();
+            Ok(value.value)
+        } else {
+            Ok(value)
+        }
     }
 
     fn r#async(self: Box<Self>) -> ValueResult {
