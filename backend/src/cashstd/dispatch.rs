@@ -3,6 +3,7 @@ use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::{BuiltInFunction, NoneValue, StringValue};
 
+
 fn print_closure(params: Vec<Box<dyn Value>>) -> ValueResult {
     for param in params {
         print!("{}", param);
@@ -28,6 +29,9 @@ pub fn get_stdlib_function(ident: &str) -> Option<Box<dyn Value>> {
         "len" => BuiltInFunction::boxed(&len_closure),
 
         "type" => BuiltInFunction::boxed(&type_closure),
+
+        //Math
+        "sqrt" => BuiltInFunction::boxed(&sqrt_closure),
         _ => None,
     }
 }

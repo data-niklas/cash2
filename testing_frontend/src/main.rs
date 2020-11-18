@@ -21,7 +21,7 @@ fn main() {
             Ok(tree_result) => {
                 if tree_result.get_type_name() == "none" {
                 } else {
-                    // println!("{}", tree_result);
+                    println!("{}", tree_result);
                 }
             }
             Err(err) => {
