@@ -41,7 +41,41 @@ impl ListValue {
                 BooleanValue::boxed(true)
             }
         } else {
-            CashError::InvalidOperation("index".to_owned(), "string ".to_owned() + typename).boxed()
+            CashError::InvalidOperation("index".to_owned(), "list ".to_owned() + typename).boxed()
+        }
+    }
+
+    pub fn insert(
+        mut self: Box<Self>,
+        index: &Box<dyn Value>,
+        value: &Box<dyn Value>,
+    ) -> ValueResult {
+        if let Some(key) = index.downcast_ref::<IntegerValue>() {
+            self.values.insert(key.value as usize, (*value).clone());
+            Ok(self)
+        } else {
+            CashError::InvalidOperation(
+                "insert".to_owned(),
+                "list ".to_owned() + index.get_type_name(),
+            )
+            .boxed()
+        }
+    }
+
+    pub fn remove(mut self: Box<Self>, index: &Box<dyn Value>) -> ValueResult {
+        if let Some(key) = index.downcast_ref::<IntegerValue>() {
+            if key.value as usize > self.values.len() {
+                CashError::IndexOutOfBounds(key.value, "list".to_owned()).boxed()
+            } else {
+                self.values.remove(key.value as usize);
+                Ok(self)
+            }
+        } else {
+            CashError::InvalidOperation(
+                "remove".to_owned(),
+                "list ".to_owned() + index.get_type_name(),
+            )
+            .boxed()
         }
     }
 }
@@ -152,6 +186,7 @@ impl Value for ListValue {
         self.values.push((*value).clone());
         Ok(self)
     }
+
     fn contains(&self, value: &Box<dyn Value>) -> ValueResult {
         for val in self.values.iter() {
             if let Ok(boxed) = (*val).eq(value) {

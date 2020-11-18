@@ -53,7 +53,7 @@ OctInt = @{ ASCII_OCT_DIGIT ~ ( "_"* ~ ASCII_OCT_DIGIT)* }
 BinInt = @{ ASCII_BIN_DIGIT ~ ( "_"* ~ ASCII_BIN_DIGIT)* }
 Float = @{ DecInt? ~ (("." ~ DecInt ~ "_"* ~ ( "e" ~ DecInt)?) | "e" ~ DecInt) }
 Bool = @{ "false" | "true" }
-Ident = @{ !Keyword ~ "$"? ~ ASCII_ALPHA ~ ( ASCII_ALPHANUMERIC | "_")* }
+Ident = @{ (!Keyword ~ ASCII_ALPHA ~ ( ASCII_ALPHANUMERIC | "_")* ) | (("$" | Keyword) ~ ( ASCII_ALPHANUMERIC | "_")+ ) }
 Range = { (Int | Ident) ~ ".." ~ (Int | Ident) }
 
 

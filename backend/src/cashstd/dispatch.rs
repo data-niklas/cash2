@@ -54,6 +54,9 @@ pub fn get_stdlib_function(ident: &str) -> Option<Box<dyn Value>> {
         "filter" => BuiltInFunction::boxed(&filter_closure),
         "len" => BuiltInFunction::boxed(&len_closure),
 
+        "remove" => BuiltInFunction::boxed(&remove_closure),
+        "insert" => BuiltInFunction::boxed(&insert_closure),
+
         "type" => BuiltInFunction::boxed(&type_closure),
         "exists" => BuiltInFunction::boxed(&exists_closure),
 

@@ -12,6 +12,36 @@ impl DictValue {
     pub fn boxed(values: HashMap<String, Box<dyn Value>>) -> ValueResult {
         Ok(Box::new(DictValue { values }))
     }
+
+    pub fn insert(
+        mut self: Box<Self>,
+        index: &Box<dyn Value>,
+        value: &Box<dyn Value>,
+    ) -> ValueResult {
+        if let Some(key) = index.downcast_ref::<StringValue>() {
+            self.values.insert(key.value.to_owned(), (*value).clone());
+            Ok(self)
+        } else {
+            CashError::InvalidOperation(
+                "insert".to_owned(),
+                "dict ".to_owned() + index.get_type_name(),
+            )
+            .boxed()
+        }
+    }
+
+    pub fn remove(mut self: Box<Self>, index: &Box<dyn Value>) -> ValueResult {
+        if let Some(key) = index.downcast_ref::<StringValue>() {
+            self.values.remove(&key.value);
+            Ok(self)
+        } else {
+            CashError::InvalidOperation(
+                "remove".to_owned(),
+                "dict ".to_owned() + index.get_type_name(),
+            )
+            .boxed()
+        }
+    }
 }
 
 impl Value for DictValue {

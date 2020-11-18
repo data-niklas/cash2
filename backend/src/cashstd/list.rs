@@ -125,3 +125,50 @@ pub fn len_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) 
         CashError::InvalidParameterCount(params.len(), 1).boxed()
     }
 }
+
+pub fn insert_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+    if params.len() == 3 {
+        let first = params.remove(0);
+        let second = params.remove(0);
+        let third = params.remove(0);
+        let type_name = first.get_type_name();
+        match type_name {
+            "list" => {
+                let first = first.downcast::<ListValue>().unwrap();
+                first.insert(&second, &third)
+            }
+            "dict" => {
+                let first = first.downcast::<DictValue>().unwrap();
+                first.insert(&second, &third)
+            }
+            _ => {
+                CashError::InvalidArguments(type_name.to_owned(), "List or Dict".to_owned()).boxed()
+            }
+        }
+    } else {
+        CashError::InvalidParameterCount(params.len(), 3).boxed()
+    }
+}
+
+pub fn remove_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+    if params.len() == 2 {
+        let first = params.remove(0);
+        let second = params.remove(0);
+        let type_name = first.get_type_name();
+        match type_name {
+            "list" => {
+                let first = first.downcast::<ListValue>().unwrap();
+                first.remove(&second)
+            }
+            "dict" => {
+                let first = first.downcast::<DictValue>().unwrap();
+                first.remove(&second)
+            }
+            _ => {
+                CashError::InvalidArguments(type_name.to_owned(), "List or Dict".to_owned()).boxed()
+            }
+        }
+    } else {
+        CashError::InvalidParameterCount(params.len(), 2).boxed()
+    }
+}

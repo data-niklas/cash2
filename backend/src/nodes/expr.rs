@@ -1,3 +1,4 @@
+use super::literals::StringLiteral;
 use crate::ast::*;
 use crate::context::Context;
 use crate::error::CashError;
@@ -329,14 +330,19 @@ impl Postfix {
                 Self::FunctionCall(nodes)
             }
             Rule::Indexing => {
-                let node = make_ast(
-                    inner
-                        .into_inner()
-                        .next()
-                        .expect("Indexing should contain a node"),
-                )
-                .expect("Could not create node from indexing");
-                Self::Indexing(node)
+                let node = inner
+                    .into_inner()
+                    .next()
+                    .expect("Indexing should contain a node");
+                if node.as_rule() == Rule::Ident {
+                    Self::Indexing(Arc::new(StringLiteral {
+                        strings: vec![node.as_span().as_str().to_owned()],
+                        interpolations: Vec::new(),
+                    }))
+                } else {
+                    let node = make_ast(node).expect("Could not create node from indexing");
+                    Self::Indexing(node)
+                }
             }
             _ => panic!("Should not contain other rule"),
         }

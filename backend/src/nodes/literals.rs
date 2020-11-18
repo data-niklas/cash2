@@ -225,8 +225,8 @@ impl DictLiteral {
 
 #[derive(Debug)]
 pub struct StringLiteral {
-    strings: Vec<String>,
-    interpolations: Vec<Arc<dyn Node>>,
+    pub strings: Vec<String>,
+    pub interpolations: Vec<Arc<dyn Node>>,
 }
 
 impl Node for StringLiteral {
