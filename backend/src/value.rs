@@ -4,7 +4,7 @@ use downcast_rs::{impl_downcast, DowncastSync};
 use std::error::Error;
 use std::sync::{Arc, RwLock};
 
-pub type ValueResult = Result<Box<dyn Value>, Box<dyn Error>>;
+pub type ValueResult = Result<Box<dyn Value>, Box<dyn Error + Send + Sync>>;
 
 pub trait Value: DowncastSync + std::fmt::Display + std::fmt::Debug {
     fn get_type_name(&self) -> &'static str;
@@ -12,7 +12,7 @@ pub trait Value: DowncastSync + std::fmt::Display + std::fmt::Debug {
         &mut self,
         _value: Box<dyn Value>,
         _indexes: &[Box<dyn Value>],
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), Box<dyn Error + Send + Sync>> {
         CashError::InvalidOperation("indexing".to_owned(), self.get_type_name().to_owned()).boxed()
     }
     fn index(&self, _index: &Box<dyn Value>) -> ValueResult {
@@ -107,11 +107,10 @@ pub trait Value: DowncastSync + std::fmt::Display + std::fmt::Debug {
     fn or(self: Box<Self>, _value: &Box<dyn Value>) -> ValueResult {
         CashError::InvalidOperation("or".to_owned(), self.get_type_name().to_owned()).boxed()
     }
-    fn r#async(self: Box<Self>) -> ValueResult {
-        CashError::InvalidOperation("async".to_owned(), self.get_type_name().to_owned()).boxed()
-    }
     fn clone(&self) -> Box<dyn Value>;
-    fn vec(self: Box<Self>) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error>> {
+    fn vec(
+        self: Box<Self>,
+    ) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error + Send + Sync>> {
         CashError::InvalidOperation("vec".to_owned(), self.get_type_name().to_owned()).boxed()
     }
 }

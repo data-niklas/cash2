@@ -20,7 +20,8 @@ Elif = { "elif" ~ Expr ~ WrappedBlock }
 Else = { "else" ~ WrappedBlock }
 
 
-Expr = { Prefix* ~ Primary ~ Postfix* ~ (Infix ~ Prefix* ~ Primary ~ Postfix*)* }
+Expr = { Async? ~ Prefix* ~ Primary ~ Postfix* ~ (Infix ~ Prefix* ~ Primary ~ Postfix*)* }
+Async = {"async"}
 Primary = _{ Literal | Ident | Paren | Capture | WrappedBlock}
 Pipe = { PipeCall ~ ( "|" ~ PipeCall)* }
 PipeCall = { Ident ~ FunctionCall}
@@ -29,7 +30,7 @@ Literal = { Function | Range | Float | Int | String | Bool | List | Dict }
 Paren = _{ "(" ~ Expr ~ ")" }
 
 Infix = { "<<" | ">>" | "**" | "+" | "-" | "*" | "/" | "%" | "!=" | "==" | "<=" | ">=" | "<" | ">" | "&" | "|" | "^" | "in" }
-Prefix = { "+" | "-" | "!" | "await" | "async" }
+Prefix = { "+" | "-" | "!" | "await" }
 Postfix = { FunctionCall | Indexing }
 
 FunctionCall = { "(" ~ Arguments? ~ ")"}
@@ -67,7 +68,7 @@ DoubleQuoteText = { (!("\"" | Interpolation | Escape) ~ ANY)+ }
 SingleQuoteText = {  (!("\'" | Escape) ~ ANY)+}
 
 
-Keyword = @{ "else" | "if" | "elif" | "while" | "for" | "in" | "return" | "break" | "continue" } 
+Keyword = @{ "else" | "if" | "elif" | "while" | "for" | "in" | "return" | "break" | "continue" | "async" | "await" } 
 
 LineComment = _{ "#" ~ (!NEWLINE ~ ANY)* }
 MultilineComment = _{"/*" ~ (!"*/" ~ ANY)* ~ "*/"}

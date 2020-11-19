@@ -2,7 +2,7 @@ use crate::ast::*;
 use crate::context::Context;
 use crate::error::CashError;
 use crate::rules::Rule;
-use crate::value::Value;
+use crate::value::{Value, ValueResult};
 use pest::iterators::Pairs;
 use std::sync::{Arc, RwLock};
 
@@ -17,10 +17,7 @@ pub struct Assignment {
 }
 
 impl Node for Assignment {
-    fn eval(
-        &self,
-        ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
         let mut result = self.expr.eval(ctx.clone())?;
         if let Some(infix) = &self.infix {
             if let Some(mut val) = ctx.read().expect("could not read value").get(&self.ident) {
@@ -79,7 +76,7 @@ impl Node for Assignment {
 impl Assignment {
     pub fn parse_inner(
         mut pairs: Pairs<Rule>,
-    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let ident = pairs
             .next()
             .expect("Did not find identifier node")

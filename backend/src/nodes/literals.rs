@@ -2,7 +2,7 @@ use crate::ast::*;
 use crate::context::Context;
 use crate::error::CashError;
 use crate::rules::Rule;
-use crate::value::Value;
+use crate::value::{Value, ValueResult};
 use crate::values::*;
 use pest::iterators::Pairs;
 use std::sync::{Arc, RwLock};
@@ -15,10 +15,7 @@ pub struct BooleanLiteral {
 }
 
 impl Node for BooleanLiteral {
-    fn eval(
-        &self,
-        _ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, _ctx: Arc<RwLock<Context>>) -> ValueResult {
         BooleanValue::boxed(self.value)
     }
 }
@@ -34,7 +31,9 @@ pub struct IntegerLiteral {
 }
 
 impl IntegerLiteral {
-    pub fn parse_str(text: &str) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse_str(
+        text: &str,
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let text = text.replace("_", "");
         Ok(Arc::new(if text.starts_with("0x") {
             IntegerLiteral {
@@ -57,10 +56,7 @@ impl IntegerLiteral {
 }
 
 impl Node for IntegerLiteral {
-    fn eval(
-        &self,
-        _ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, _ctx: Arc<RwLock<Context>>) -> ValueResult {
         IntegerValue::boxed(self.value)
     }
 }
@@ -76,10 +72,7 @@ pub struct FloatLiteral {
 }
 
 impl Node for FloatLiteral {
-    fn eval(
-        &self,
-        _ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, _ctx: Arc<RwLock<Context>>) -> ValueResult {
         FloatValue::boxed(self.value)
     }
 }
@@ -90,7 +83,9 @@ impl std::fmt::Display for FloatLiteral {
 }
 
 impl FloatLiteral {
-    pub fn parse_str(text: &str) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse_str(
+        text: &str,
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let text = text.replace("_", "");
         Ok(Arc::new(FloatLiteral {
             value: text.parse::<f64>()?,
@@ -105,10 +100,7 @@ pub struct RangeLiteral {
 }
 
 impl Node for RangeLiteral {
-    fn eval(
-        &self,
-        ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
         let lower = self.lower.eval(ctx.clone())?;
         let lower = lower.downcast_ref::<IntegerValue>();
         let upper = self.upper.eval(ctx)?;
@@ -127,7 +119,9 @@ impl std::fmt::Display for RangeLiteral {
 }
 
 impl RangeLiteral {
-    pub fn parse_inner(mut pair: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse_inner(
+        mut pair: Pairs<Rule>,
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let lower_node = pair.next().expect("Could not happen - grammar!");
         let upper_node = pair.next().expect("Could not happen - grammar!");
         let lower = make_ast(lower_node)?;
@@ -143,10 +137,7 @@ pub struct ListLiteral {
 }
 
 impl Node for ListLiteral {
-    fn eval(
-        &self,
-        ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
         let mut v: Vec<Box<dyn Value>> = Vec::with_capacity(self.vals.len());
         for val in &self.vals {
             v.push((*val).eval(ctx.clone())?);
@@ -167,7 +158,9 @@ impl std::fmt::Display for ListLiteral {
 }
 
 impl ListLiteral {
-    pub fn parse_inner(pair: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse_inner(
+        pair: Pairs<Rule>,
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let mut vals = Vec::new();
         for node in pair {
             vals.push(make_ast(node)?);
@@ -182,10 +175,7 @@ pub struct DictLiteral {
 }
 
 impl Node for DictLiteral {
-    fn eval(
-        &self,
-        ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
         let mut v: HashMap<String, Box<dyn Value>> = HashMap::with_capacity(self.vals.len());
         for (key, val) in &self.vals {
             v.insert(
@@ -209,7 +199,9 @@ impl std::fmt::Display for DictLiteral {
 }
 
 impl DictLiteral {
-    pub fn parse_inner(pair: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse_inner(
+        pair: Pairs<Rule>,
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let mut vals = Vec::new();
         for node in pair {
             let mut inner: Vec<_> = node.into_inner().collect();
@@ -230,10 +222,7 @@ pub struct StringLiteral {
 }
 
 impl Node for StringLiteral {
-    fn eval(
-        &self,
-        ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
         let mut text = self.strings[0].to_owned();
         for i in 0..self.interpolations.len() {
             let value = self.interpolations[i].eval(ctx.clone())?;
@@ -250,7 +239,9 @@ impl std::fmt::Display for StringLiteral {
 }
 
 impl StringLiteral {
-    pub fn parse_inner(pair: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse_inner(
+        pair: Pairs<Rule>,
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let mut strings = Vec::new();
         let mut interpolations = Vec::new();
         let mut value = String::new();
@@ -334,10 +325,7 @@ pub struct FunctionLiteral {
 }
 
 impl Node for FunctionLiteral {
-    fn eval(
-        &self,
-        ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
         let mut params = Vec::with_capacity(self.params.len());
         for (name, value) in &self.params {
             let mut optional = None;
@@ -358,7 +346,7 @@ impl std::fmt::Display for FunctionLiteral {
 impl FunctionLiteral {
     pub fn parse_inner(
         mut pairs: Pairs<Rule>,
-    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let first = pairs.next().unwrap();
         let mut params = Vec::new();
         let block;
@@ -402,10 +390,7 @@ impl FunctionLiteral {
 pub struct NoneLiteral;
 
 impl Node for NoneLiteral {
-    fn eval(
-        &self,
-        _ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, _ctx: Arc<RwLock<Context>>) -> ValueResult {
         NoneValue::boxed()
     }
 }

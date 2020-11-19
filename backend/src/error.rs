@@ -29,7 +29,7 @@ pub enum CashError {
 }
 
 impl CashError {
-    pub fn boxed<T>(self) -> Result<T, Box<dyn std::error::Error>> {
+    pub fn boxed<T>(self) -> Result<T, Box<dyn std::error::Error + Send + Sync>> {
         Err(Box::new(self))
     }
 }

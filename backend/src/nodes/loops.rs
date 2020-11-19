@@ -2,7 +2,7 @@ use crate::ast::*;
 use crate::context::Context;
 use crate::error::CashError;
 use crate::rules::Rule;
-use crate::value::Value;
+use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, BreakValue, ContinueValue, NoneValue};
 use pest::iterators::Pairs;
 use std::sync::{Arc, RwLock};
@@ -14,10 +14,7 @@ pub struct While {
 }
 
 impl Node for While {
-    fn eval(
-        &self,
-        ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
         let ctx = Context::from_parent(ctx);
         let mut lastvalue = NoneValue::boxed();
         loop {
@@ -51,7 +48,9 @@ impl Node for While {
 }
 
 impl While {
-    pub fn parse(mut pairs: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse(
+        mut pairs: Pairs<Rule>,
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let condition = make_ast(pairs.next().expect("due to grammar.pest"))?;
         let block = make_ast(pairs.next().expect("due to grammar.pest"))?;
         Ok(Arc::new(Self { condition, block }))
@@ -74,10 +73,7 @@ pub struct For {
 }
 
 impl Node for For {
-    fn eval(
-        &self,
-        ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
         let mut lastvalue = NoneValue::boxed();
         let values = self.expr.eval(ctx.clone())?.vec()?;
         for value in values {
@@ -104,7 +100,9 @@ impl Node for For {
 }
 
 impl For {
-    pub fn parse(mut pairs: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse(
+        mut pairs: Pairs<Rule>,
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let ident = pairs
             .next()
             .expect("due to grammar.pest")

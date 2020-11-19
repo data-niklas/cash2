@@ -3,7 +3,8 @@ use crate::ast::*;
 use crate::context::Context;
 use crate::error::CashError;
 use crate::rules::Rule;
-use crate::value::Value;
+use crate::value::{Value, ValueResult};
+use crate::values::FutureValue;
 use pest::iterators::{Pair, Pairs};
 use std::iter::Peekable;
 use std::slice::Iter;
@@ -15,22 +16,29 @@ type Primary = (Vec<Prefix>, Arc<dyn Node>, Vec<Postfix>);
 pub struct Expr {
     pub values: Vec<Primary>,
     pub infixes: Vec<Infix>,
+    pub is_async: bool,
 }
 
 impl Node for Expr {
-    fn eval(
-        &self,
-        ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
-        let mut values = Vec::new();
-        for value in &self.values {
-            values.push(self.eval_primary(&value, ctx.clone())?);
+    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
+        if self.is_async {
+            let new_node = Expr {
+                values: self.values.clone(),
+                infixes: self.infixes.clone(),
+                is_async: false,
+            };
+            FutureValue::boxed(Arc::new(new_node), ctx)
+        } else {
+            let mut values = Vec::new();
+            for value in &self.values {
+                values.push(self.eval_primary(&value, ctx.clone())?);
+            }
+            Self::climb_ops(
+                &mut values.into_iter(),
+                &mut self.infixes.iter().peekable(),
+                0,
+            )
         }
-        Self::climb_ops(
-            &mut values.into_iter(),
-            &mut self.infixes.iter().peekable(),
-            0,
-        )
     }
 }
 
@@ -39,7 +47,7 @@ impl Expr {
         values: &mut impl std::iter::Iterator<Item = Box<dyn Value>>,
         infixes: &mut Peekable<Iter<Infix>>,
         min_precedence: usize,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> ValueResult {
         let mut result = values.next().expect("A value should exist");
         while let Some(next) = infixes.peek() {
             let mut prec = next.precedence();
@@ -56,11 +64,7 @@ impl Expr {
         Ok(result)
     }
 
-    pub fn compute_infix(
-        lhs: Box<dyn Value>,
-        rhs: &Box<dyn Value>,
-        infix: &Infix,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    pub fn compute_infix(lhs: Box<dyn Value>, rhs: &Box<dyn Value>, infix: &Infix) -> ValueResult {
         match infix {
             Infix::Exponentiation => lhs.power(rhs),
             Infix::Multiply => lhs.multiply(rhs),
@@ -87,7 +91,7 @@ impl Expr {
         &self,
         primary: &(Vec<Prefix>, Arc<dyn Node>, Vec<Postfix>),
         ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    ) -> ValueResult {
         let (prefixes, value, postfixes) = primary;
         let mut value = value.eval(ctx.clone())?;
         for postfix in postfixes {
@@ -115,9 +119,6 @@ impl Expr {
                 }
                 Prefix::Await => {
                     value = value.r#await()?;
-                }
-                Prefix::Async => {
-                    value = value.r#async()?;
                 }
                 Prefix::Not => {
                     value = value.not()?;
@@ -149,14 +150,20 @@ impl std::fmt::Display for Expr {
 }
 
 impl Expr {
-    pub fn parse_inner(pairs: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse_inner(
+        pairs: Pairs<Rule>,
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let mut values = Vec::new();
         let mut infixes = Vec::new();
         let mut prefixes = Vec::new();
         let mut postfixes = Vec::new();
         let mut primary = None;
+        let mut is_async = false;
         for pair in pairs {
             match pair.as_rule() {
+                Rule::Async => {
+                    is_async = true;
+                }
                 Rule::Prefix => {
                     prefixes.push(Prefix::parse(pair));
                 }
@@ -194,16 +201,19 @@ impl Expr {
         }
         values.push((prefixes, primary.expect("Primary should exist"), postfixes));
 
-        Ok(Arc::new(Expr { values, infixes }))
+        Ok(Arc::new(Expr {
+            values,
+            infixes,
+            is_async,
+        }))
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Prefix {
     UnaryPlus,
     UnaryMinus,
     Await,
-    Async,
     Not,
 }
 
@@ -214,13 +224,12 @@ impl Prefix {
             "+" => Self::UnaryPlus,
             "-" => Self::UnaryMinus,
             "await" => Self::Await,
-            "async" => Self::Async,
             _ => panic!("Unrecognized prefix operator"),
         }
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Infix {
     Exponentiation,
     Multiply,
@@ -313,7 +322,7 @@ impl Infix {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Postfix {
     FunctionCall(Vec<Arc<dyn Node>>),
     Indexing(Arc<dyn Node>),

@@ -166,9 +166,6 @@ impl Value for FloatValue {
     fn ne(&self, value: &Box<dyn Value>) -> ValueResult {
         self.eq(value)?.not()
     }
-    fn r#async(self: Box<Self>) -> ValueResult {
-        unimplemented!();
-    }
 }
 
 impl std::fmt::Display for FloatValue {

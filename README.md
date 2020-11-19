@@ -5,3 +5,11 @@ It uses [pest](https://pest.rs) for parsing and for further information look at 
 
 ### Mental Breakdowns while developing: 3 and counting
 > Boxing Rust
+
+## Common complaints
+- My script does not seem to run<br>
+    that sounds like a 'you' problem
+- My script runs indefinitely when awaiting the same future twice<br>
+    that sounds like a 'you' problem
+- The syntax is confusing<br>
+    that sounds like a 'you' problem

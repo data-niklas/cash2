@@ -9,6 +9,7 @@ mod ast;
 mod cashstd;
 mod context;
 mod error;
+mod executor;
 mod nodes;
 mod rules;
 mod value;
@@ -17,7 +18,7 @@ mod values;
 use context::Context;
 use error::CashError;
 use pest::Parser;
-use value::Value;
+use value::{Value, ValueResult};
 
 pub struct Runtime {
     ctx: Arc<RwLock<Context>>,
@@ -92,10 +93,7 @@ impl Runtime {
         text
     }
 
-    pub fn interpret(
-        &mut self,
-        text: String,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    pub fn interpret(&mut self, text: String) -> ValueResult {
         //A is used for debugging purposes
 
         let text = text.trim().to_owned();

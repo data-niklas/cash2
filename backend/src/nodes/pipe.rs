@@ -2,7 +2,7 @@ use crate::ast::*;
 use crate::context::Context;
 use crate::error::CashError;
 use crate::rules::Rule;
-use crate::value::Value;
+use crate::value::{Value, ValueResult};
 use crate::values::{NoneValue, StringValue};
 use pest::iterators::Pairs;
 #[cfg(target_family = "unix")]
@@ -25,10 +25,7 @@ pub struct Pipe {
 }
 
 impl Node for Pipe {
-    fn eval(
-        &self,
-        ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
         // construct pipe
         let mut cmd = None;
         for (i, command) in self.commands.iter().enumerate() {
@@ -98,7 +95,7 @@ impl Pipe {
     pub fn parse_inner(
         pairs: Pairs<Rule>,
         capturing: bool,
-    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let mut commands = Vec::new();
 
         for mut inner in pairs.map(|x| x.into_inner()) {

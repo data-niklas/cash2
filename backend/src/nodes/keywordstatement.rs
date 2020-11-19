@@ -3,7 +3,7 @@ use crate::context::Context;
 use crate::error::CashError;
 use crate::nodes::NoneLiteral;
 use crate::rules::Rule;
-use crate::value::Value;
+use crate::value::{Value, ValueResult};
 use crate::values::{BreakValue, ContinueValue, ReturnValue};
 use pest::iterators::Pairs;
 use std::sync::{Arc, RwLock};
@@ -22,10 +22,7 @@ pub struct KeywordStatement {
 }
 
 impl Node for KeywordStatement {
-    fn eval(
-        &self,
-        ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
         let val = self.statement.eval(ctx)?;
         match self.keyword {
             KeywordType::Return => ReturnValue::boxed(val),
@@ -38,7 +35,7 @@ impl Node for KeywordStatement {
 impl KeywordStatement {
     pub fn parse_inner(
         mut inner: Pairs<Rule>,
-    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let first = inner.next().expect("I need to find this");
         let keyword = match first.as_span().as_str() {
             "return" => KeywordType::Return,

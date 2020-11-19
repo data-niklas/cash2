@@ -53,7 +53,7 @@ impl Value for DictValue {
         &mut self,
         value: Box<dyn Value>,
         indexes: &[Box<dyn Value>],
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         assert!(!indexes.is_empty());
         let index = indexes[0].to_string();
         if indexes.len() == 1 {
@@ -115,9 +115,6 @@ impl Value for DictValue {
     fn ne(&self, value: &Box<dyn Value>) -> ValueResult {
         self.eq(value)?.not()
     }
-    fn r#async(self: Box<Self>) -> ValueResult {
-        unimplemented!()
-    }
     fn clone(&self) -> Box<dyn Value> {
         let mut v: HashMap<String, Box<dyn Value>> = HashMap::with_capacity(self.values.len());
         for (key, value) in &self.values {
@@ -126,7 +123,9 @@ impl Value for DictValue {
         Box::new(Self { values: v })
     }
 
-    fn vec(self: Box<Self>) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error>> {
+    fn vec(
+        self: Box<Self>,
+    ) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error + Sync + Send>> {
         let mut vec: Vec<Box<dyn Value>> = Vec::new();
         for key in self.values.keys() {
             vec.push(Box::new(StringValue {

@@ -48,10 +48,6 @@ impl Value for FunctionValue {
             Ok(value)
         }
     }
-
-    fn r#async(self: Box<Self>) -> ValueResult {
-        unimplemented!()
-    }
     fn clone(&self) -> Box<dyn Value> {
         let mut params = Vec::with_capacity(self.params.len());
         for (name, value) in &self.params {

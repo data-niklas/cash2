@@ -89,7 +89,7 @@ impl Value for ListValue {
         &mut self,
         value: Box<dyn Value>,
         indexes: &[Box<dyn Value>],
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         assert!(!indexes.is_empty());
         if let Some(other) = indexes[0].downcast_ref::<IntegerValue>() {
             let index: usize;
@@ -229,9 +229,6 @@ impl Value for ListValue {
     fn ne(&self, value: &Box<dyn Value>) -> ValueResult {
         self.eq(value)?.not()
     }
-    fn r#async(self: Box<Self>) -> ValueResult {
-        unimplemented!()
-    }
     fn clone(&self) -> Box<dyn Value> {
         let mut v: Vec<Box<dyn Value>> = Vec::with_capacity(self.values.len());
         for value in &self.values {
@@ -240,7 +237,9 @@ impl Value for ListValue {
         Box::new(Self { values: v })
     }
 
-    fn vec(self: Box<Self>) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error>> {
+    fn vec(
+        self: Box<Self>,
+    ) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error + Sync + Send>> {
         Ok(self.values)
     }
 }

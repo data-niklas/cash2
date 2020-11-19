@@ -60,9 +60,6 @@ impl Value for BooleanValue {
             CashError::InvalidOperation("and".to_owned(), "boolean ".to_owned() + typename).boxed()
         }
     }
-    fn r#async(self: Box<Self>) -> ValueResult {
-        unimplemented!();
-    }
 }
 
 impl std::fmt::Display for BooleanValue {

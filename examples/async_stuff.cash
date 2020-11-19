@@ -1,0 +1,8 @@
+include! ./fibonacci.cash
+results = []
+for i in 0..15 {
+    results += async fibonacci(i)
+}
+each(results, (val, index)->{
+    print(await val)
+})

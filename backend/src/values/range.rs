@@ -111,11 +111,10 @@ impl Value for RangeValue {
     fn ne(&self, value: &Box<dyn Value>) -> ValueResult {
         self.eq(value)?.not()
     }
-    fn r#async(self: Box<Self>) -> ValueResult {
-        unimplemented!();
-    }
 
-    fn vec(self: Box<Self>) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error>> {
+    fn vec(
+        self: Box<Self>,
+    ) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error + Sync + Send>> {
         let mut vec: Vec<Box<dyn Value>> = Vec::new();
         for i in self.lower..self.upper {
             vec.push(Box::new(IntegerValue { value: i }));

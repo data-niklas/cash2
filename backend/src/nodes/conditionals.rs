@@ -2,7 +2,7 @@ use crate::ast::*;
 use crate::context::Context;
 use crate::error::CashError;
 use crate::rules::Rule;
-use crate::value::Value;
+use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, NoneValue};
 use pest::iterators::Pairs;
 use std::sync::{Arc, RwLock};
@@ -16,10 +16,7 @@ pub struct Conditional {
 }
 
 impl Node for Conditional {
-    fn eval(
-        &self,
-        ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
         let ctx = Context::from_parent(ctx);
         for (expr, block) in &self.ifblocks {
             let val = expr.eval(ctx.clone())?;
@@ -45,7 +42,9 @@ impl Node for Conditional {
 }
 
 impl Conditional {
-    pub fn parse(pairs: Pairs<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    pub fn parse(
+        pairs: Pairs<Rule>,
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let mut ifblocks = Vec::new();
         let mut elseblock = None;
         for pair in pairs {

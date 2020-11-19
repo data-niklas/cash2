@@ -1,7 +1,7 @@
 use crate::ast::*;
 use crate::context::Context;
 use crate::rules::Rule;
-use crate::value::Value;
+use crate::value::{Value, ValueResult};
 use crate::values::ReturnValue;
 use pest::iterators::Pairs;
 use std::sync::{Arc, RwLock};
@@ -13,10 +13,7 @@ pub struct Block {
 }
 
 impl Node for Block {
-    fn eval(
-        &self,
-        ctx: Arc<RwLock<Context>>,
-    ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
+    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
         let mut lastvalue = None;
         let ctxt;
         if !self.is_root {
@@ -47,7 +44,7 @@ impl Block {
     pub fn parse(
         pairs: Pairs<Rule>,
         is_root: bool,
-    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+    ) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
         let mut statements = Vec::new();
         for pair in pairs {
             statements.push(make_ast(pair)?);

@@ -1,7 +1,8 @@
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 
 use crate::cashstd;
+use crate::executor::Executor;
 use crate::value::Value;
 use crate::values::StringValue;
 
@@ -9,6 +10,7 @@ use crate::values::StringValue;
 pub struct Context {
     parent: Option<Arc<RwLock<Context>>>,
     vars: HashMap<String, Box<dyn Value>>,
+    pub executor: Arc<Mutex<Executor>>,
 }
 
 impl Context {
@@ -16,13 +18,23 @@ impl Context {
         Context {
             parent: None,
             vars: HashMap::new(),
+            executor: Arc::new(Mutex::new(Executor::default())),
         }
     }
     pub fn from_parent(parent: Arc<RwLock<Context>>) -> Arc<RwLock<Context>> {
+        let executor = parent
+            .read()
+            .expect("Could not read from RwLock")
+            .get_executor();
         Arc::new(RwLock::new(Context {
             parent: Some(parent),
             vars: HashMap::new(),
+            executor,
         }))
+    }
+
+    pub fn get_executor(&self) -> Arc<Mutex<Executor>> {
+        self.executor.clone()
     }
 
     pub fn get(&self, key: &str) -> Option<Box<dyn Value>> {
@@ -73,11 +85,7 @@ impl Context {
 
     pub fn exists(&self, key: &str) -> bool {
         if key.starts_with('$') {
-            if std::env::var(&key[1..]).is_ok() {
-                return true;
-            } else {
-                return false;
-            }
+            return std::env::var(&key[1..]).is_ok();
         }
         if self.vars.contains_key(key) {
             return true;

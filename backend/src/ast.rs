@@ -3,18 +3,19 @@ use std::sync::{Arc, RwLock};
 use crate::context::Context;
 use crate::nodes::*;
 use crate::rules::Rule;
-use crate::value::Value;
+use crate::value::{Value, ValueResult};
 use downcast_rs::{impl_downcast, DowncastSync};
 use pest::iterators::Pair;
 
 pub trait Node: std::fmt::Display + std::fmt::Debug + DowncastSync {
-    fn eval(&self, ctx: Arc<RwLock<Context>>)
-        -> Result<Box<dyn Value>, Box<dyn std::error::Error>>;
+    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult;
 }
 
 impl_downcast!(sync Node);
 
-pub fn make_ast(root: Pair<Rule>) -> Result<Arc<dyn Node>, Box<dyn std::error::Error>> {
+pub fn make_ast(
+    root: Pair<Rule>,
+) -> Result<Arc<dyn Node>, Box<dyn std::error::Error + Sync + Send>> {
     match root.as_rule() {
         Rule::Bool => Ok(Arc::new(BooleanLiteral {
             value: root.as_span().as_str().parse::<bool>()?,

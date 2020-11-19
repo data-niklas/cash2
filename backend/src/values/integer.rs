@@ -222,9 +222,6 @@ impl Value for IntegerValue {
                 .boxed()
         }
     }
-    fn r#async(self: Box<Self>) -> ValueResult {
-        unimplemented!();
-    }
 }
 
 impl std::fmt::Display for IntegerValue {

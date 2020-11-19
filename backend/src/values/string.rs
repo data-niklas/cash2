@@ -139,11 +139,10 @@ impl Value for StringValue {
     fn contains(&self, value: &Box<dyn Value>) -> ValueResult {
         BooleanValue::boxed(self.value.contains(&value.to_string()))
     }
-    fn r#async(self: Box<Self>) -> ValueResult {
-        unimplemented!();
-    }
 
-    fn vec(self: Box<Self>) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error>> {
+    fn vec(
+        self: Box<Self>,
+    ) -> Result<Vec<Box<dyn Value>>, Box<dyn std::error::Error + Sync + Send>> {
         let mut vec: Vec<Box<dyn Value>> = Vec::new();
         for c in self.value.chars() {
             vec.push(Box::new(StringValue {
