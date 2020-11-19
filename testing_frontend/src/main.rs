@@ -16,7 +16,13 @@ fn main() {
         return;
     }
     if args.len() == 2 {
-        let contents = std::fs::read_to_string(&args[1]).expect("Errored while reading file!");
+        let path = std::fs::canonicalize(std::path::Path::new(&args[1]))
+            .expect("Cannot canonicalize path");
+        let contents = std::fs::read_to_string(&path).expect("Errored while reading file!");
+        let cwd = std::env::current_dir().expect("Cannot find current working directory");
+        assert!(
+            std::env::set_current_dir(path.parent().expect("Cannot find parent of file")).is_ok()
+        );
         match rt.interpret(contents) {
             Ok(tree_result) => {
                 if tree_result.get_type_name() == "none" {
@@ -28,6 +34,7 @@ fn main() {
                 println!("{}", err);
             }
         }
+        assert!(std::env::set_current_dir(&cwd).is_ok());
     }
 
     loop {

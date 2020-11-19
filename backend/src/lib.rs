@@ -1,6 +1,9 @@
 //By default, eval async and wait for completion
 //#BeDefault
+use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
+
+use glob::glob;
 
 mod ast;
 mod cashstd;
@@ -49,13 +52,56 @@ impl Runtime {
         runtime
     }
 
+    fn preprocess(mut text: String) -> String {
+        let mut replacements = HashMap::new();
+        let cwd = std::env::current_dir().expect("Cannot find current working directory");
+        for line in text.lines() {
+            if line.starts_with("include! ") {
+                let (_, path) = line.split_at(9);
+                let mut all_contents = String::new();
+                if replacements.contains_key(path) {
+                    continue;
+                }
+                for entry in glob(path).expect("Failed to read glob pattern") {
+                    match entry {
+                        Ok(path) => {
+                            let path =
+                                std::fs::canonicalize(path).expect("Cannot canonicalize path");
+                            let contents = std::fs::read_to_string(&path)
+                                .expect("Errored while reading file!");
+                            assert!(std::env::set_current_dir(
+                                &path.parent().expect("Cannot find parent of file")
+                            )
+                            .is_ok());
+                            let contents = Self::preprocess(contents);
+                            assert!(std::env::set_current_dir(&cwd).is_ok());
+
+                            all_contents.push_str("\n");
+                            all_contents.push_str(&contents);
+                        }
+                        Err(e) => println!("{:?}", e),
+                    }
+                }
+                replacements.insert(path.to_owned(), all_contents);
+            }
+        }
+
+        for (key, value) in replacements {
+            text = text.replace(&format!("include! {}", key), &value);
+        }
+        text
+    }
+
     pub fn interpret(
         &mut self,
         text: String,
     ) -> Result<Box<dyn Value>, Box<dyn std::error::Error>> {
         //A is used for debugging purposes
 
-        let text = text.trim();
+        let text = text.trim().to_owned();
+
+        let text = Self::preprocess(text);
+
         let parse_result = rules::Language::parse(rules::Rule::Main, &text);
         if parse_result.is_err() {
             return CashError::ParseError(format!(
