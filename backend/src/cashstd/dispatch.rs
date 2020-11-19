@@ -3,6 +3,7 @@ use crate::context::Context;
 use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, BuiltInFunction, DictValue, ListValue, NoneValue, StringValue};
+use std::env;
 
 use std::sync::{Arc, RwLock};
 
@@ -46,8 +47,29 @@ fn exists_closure(mut params: Vec<Box<dyn Value>>, ctx: Arc<RwLock<Context>>) ->
     }
 }
 
+fn cwd_closure(params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+    if params.is_empty() {
+        StringValue::boxed(env::current_dir().expect("Could not get current working directory").to_str().expect("Could not convert Pathbuf to String").to_owned())
+    } else {
+        CashError::InvalidParameterCount(params.len(), 0).boxed()
+    }
+}
+
+fn cd_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+    if params.len() == 1 {
+        env::set_current_dir(std::path::Path::new(&params.remove(0).to_string()))?;
+        NoneValue::boxed()
+    } else {
+        CashError::InvalidParameterCount(params.len(), 1).boxed()
+    }
+}
+
 pub fn get_stdlib_function(ident: &str) -> Option<Box<dyn Value>> {
     match ident {
+
+        "cd" => BuiltInFunction::boxed(&cd_closure),
+        "cwd" => BuiltInFunction::boxed(&cwd_closure),
+
         "print" => BuiltInFunction::boxed(&print_closure),
         "each" => BuiltInFunction::boxed(&each_closure),
         "map" => BuiltInFunction::boxed(&map_closure),
