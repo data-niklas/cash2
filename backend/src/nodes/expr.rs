@@ -1,6 +1,7 @@
 use super::literals::StringLiteral;
 use crate::ast::*;
 use crate::context::Context;
+use crate::context::LockableContext;
 use crate::error::CashError;
 use crate::rules::Rule;
 use crate::value::{Value, ValueResult};
@@ -8,7 +9,7 @@ use crate::values::FutureValue;
 use pest::iterators::{Pair, Pairs};
 use std::iter::Peekable;
 use std::slice::Iter;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 type Primary = (Vec<Prefix>, Arc<dyn Node>, Vec<Postfix>);
 
@@ -20,7 +21,7 @@ pub struct Expr {
 }
 
 impl Node for Expr {
-    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn eval(&self, ctx: LockableContext) -> ValueResult {
         if self.is_async {
             let new_node = Expr {
                 values: self.values.clone(),
@@ -90,7 +91,7 @@ impl Expr {
     fn eval_primary(
         &self,
         primary: &(Vec<Prefix>, Arc<dyn Node>, Vec<Postfix>),
-        ctx: Arc<RwLock<Context>>,
+        ctx: LockableContext,
     ) -> ValueResult {
         let (prefixes, value, postfixes) = primary;
         let mut value = value.eval(ctx.clone())?;

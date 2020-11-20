@@ -1,8 +1,10 @@
 use crate::ast::Node;
 use crate::context::Context;
+use crate::context::LockableContext;
 use crate::executor::Executor;
 use crate::value::{Value, ValueResult};
-use std::sync::{Arc, Mutex, RwLock};
+use parking_lot::{Mutex, RwLock};
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct FutureValue {
@@ -11,15 +13,9 @@ pub struct FutureValue {
 }
 
 impl FutureValue {
-    pub fn boxed(node: Arc<dyn Node>, ctx: Arc<RwLock<Context>>) -> ValueResult {
-        let executor = ctx
-            .read()
-            .expect("Could not read from RwLock")
-            .get_executor();
-        let id = executor
-            .lock()
-            .expect("Could not lock Executor")
-            .register_job(node, ctx);
+    pub fn boxed(node: Arc<dyn Node>, ctx: LockableContext) -> ValueResult {
+        let executor = ctx.read().get_executor();
+        let id = executor.lock().register_job(node, ctx);
         Ok(Box::new(FutureValue { id, executor }))
     }
 }
@@ -32,10 +28,7 @@ impl Value for FutureValue {
         "future"
     }
     fn r#await(self: Box<Self>) -> ValueResult {
-        self.executor
-            .lock()
-            .expect("Could not lock Executor")
-            .get_result(self.id)
+        self.executor.lock().get_result(self.id)
     }
 }
 

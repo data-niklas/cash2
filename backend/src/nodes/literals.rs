@@ -1,11 +1,12 @@
 use crate::ast::*;
 use crate::context::Context;
+use crate::context::LockableContext;
 use crate::error::CashError;
 use crate::rules::Rule;
 use crate::value::{Value, ValueResult};
 use crate::values::*;
 use pest::iterators::Pairs;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use std::collections::HashMap;
 
@@ -15,7 +16,7 @@ pub struct BooleanLiteral {
 }
 
 impl Node for BooleanLiteral {
-    fn eval(&self, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn eval(&self, _ctx: LockableContext) -> ValueResult {
         BooleanValue::boxed(self.value)
     }
 }
@@ -56,7 +57,7 @@ impl IntegerLiteral {
 }
 
 impl Node for IntegerLiteral {
-    fn eval(&self, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn eval(&self, _ctx: LockableContext) -> ValueResult {
         IntegerValue::boxed(self.value)
     }
 }
@@ -72,7 +73,7 @@ pub struct FloatLiteral {
 }
 
 impl Node for FloatLiteral {
-    fn eval(&self, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn eval(&self, _ctx: LockableContext) -> ValueResult {
         FloatValue::boxed(self.value)
     }
 }
@@ -100,7 +101,7 @@ pub struct RangeLiteral {
 }
 
 impl Node for RangeLiteral {
-    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn eval(&self, ctx: LockableContext) -> ValueResult {
         let lower = self.lower.eval(ctx.clone())?;
         let lower = lower.downcast_ref::<IntegerValue>();
         let upper = self.upper.eval(ctx)?;
@@ -137,7 +138,7 @@ pub struct ListLiteral {
 }
 
 impl Node for ListLiteral {
-    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn eval(&self, ctx: LockableContext) -> ValueResult {
         let mut v: Vec<Box<dyn Value>> = Vec::with_capacity(self.vals.len());
         for val in &self.vals {
             v.push((*val).eval(ctx.clone())?);
@@ -175,7 +176,7 @@ pub struct DictLiteral {
 }
 
 impl Node for DictLiteral {
-    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn eval(&self, ctx: LockableContext) -> ValueResult {
         let mut v: HashMap<String, Box<dyn Value>> = HashMap::with_capacity(self.vals.len());
         for (key, val) in &self.vals {
             v.insert(
@@ -222,7 +223,7 @@ pub struct StringLiteral {
 }
 
 impl Node for StringLiteral {
-    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn eval(&self, ctx: LockableContext) -> ValueResult {
         let mut text = self.strings[0].to_owned();
         for i in 0..self.interpolations.len() {
             let value = self.interpolations[i].eval(ctx.clone())?;
@@ -325,7 +326,7 @@ pub struct FunctionLiteral {
 }
 
 impl Node for FunctionLiteral {
-    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn eval(&self, ctx: LockableContext) -> ValueResult {
         let mut params = Vec::with_capacity(self.params.len());
         for (name, value) in &self.params {
             let mut optional = None;
@@ -390,7 +391,7 @@ impl FunctionLiteral {
 pub struct NoneLiteral;
 
 impl Node for NoneLiteral {
-    fn eval(&self, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn eval(&self, _ctx: LockableContext) -> ValueResult {
         NoneValue::boxed()
     }
 }

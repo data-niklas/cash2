@@ -1,11 +1,12 @@
 use crate::ast::*;
 use crate::context::Context;
+use crate::context::LockableContext;
 use crate::error::CashError;
 use crate::rules::Rule;
 use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, NoneValue};
 use pest::iterators::Pairs;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 type If = (Arc<dyn Node>, Arc<dyn Node>);
 
@@ -16,7 +17,7 @@ pub struct Conditional {
 }
 
 impl Node for Conditional {
-    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn eval(&self, ctx: LockableContext) -> ValueResult {
         let ctx = Context::from_parent(ctx);
         for (expr, block) in &self.ifblocks {
             let val = expr.eval(ctx.clone())?;

@@ -1,7 +1,8 @@
 //By default, eval async and wait for completion
 //#BeDefault
+use parking_lot::{const_rwlock, RwLock};
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use glob::glob;
 
@@ -15,13 +16,14 @@ mod rules;
 mod value;
 mod values;
 
+use crate::context::LockableContext;
 use context::Context;
 use error::CashError;
 use pest::Parser;
 use value::{Value, ValueResult};
 
 pub struct Runtime {
-    ctx: Arc<RwLock<Context>>,
+    ctx: LockableContext,
 }
 
 impl Default for Runtime {
@@ -33,10 +35,10 @@ impl Default for Runtime {
 impl Runtime {
     pub fn new() -> Self {
         let runtime = Runtime {
-            ctx: Arc::new(RwLock::new(Context::root())),
+            ctx: Arc::new(const_rwlock(Context::root())),
         };
         {
-            let mut ctx = runtime.ctx.write().unwrap();
+            let mut ctx = runtime.ctx.write();
             ctx.set(
                 "PI",
                 Box::new(values::FloatValue {
@@ -95,6 +97,32 @@ impl Runtime {
 
     pub fn interpret(&mut self, text: String) -> ValueResult {
         //A is used for debugging purposes
+        #[cfg(feature = "deadlock_detection")]
+        {
+{
+            // only for #[cfg]
+            use parking_lot::deadlock;
+            use std::thread;
+            use std::time::Duration;
+
+            // Create a background thread which checks for deadlocks every 10s
+            thread::spawn(move || loop {
+                thread::sleep(Duration::from_secs(10));
+                let deadlocks = deadlock::check_deadlock();
+                if deadlocks.is_empty() {
+                    continue;
+                }
+
+                println!("{} deadlocks detected", deadlocks.len());
+                for (i, threads) in deadlocks.iter().enumerate() {
+                    println!("Deadlock #{}", i);
+                    for t in threads {
+                        println!("Thread Id {:#?}", t.thread_id());
+                        println!("{:#?}", t.backtrace());
+                    }
+                }
+            });
+        }
 
         let text = text.trim().to_owned();
 

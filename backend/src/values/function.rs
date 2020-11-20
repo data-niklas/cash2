@@ -5,12 +5,13 @@ use crate::values::ReturnValue;
 
 use crate::error::CashError;
 
-use std::sync::{Arc, RwLock};
+use crate::context::LockableContext;
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct FunctionValue {
     pub node: Arc<dyn Node>,
-    pub ctx: Arc<RwLock<Context>>,
+    pub ctx: LockableContext,
     pub params: Vec<(String, Option<Box<dyn Value>>)>,
 }
 
@@ -19,7 +20,7 @@ impl Value for FunctionValue {
         "function"
     }
 
-    fn call(&self, params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn call(&self, params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
         let ctx = Context::from_parent(self.ctx.clone());
         let param_count = params.len();
         if param_count > self.params.len() {
@@ -28,7 +29,7 @@ impl Value for FunctionValue {
         let mut user_values = params.into_iter();
 
         {
-            let mut ctx_lock = ctx.write().expect("Should be able to write to ctx");
+            let mut ctx_lock = ctx.write();
             for (name, val) in self.params.iter() {
                 if let Some(user_value) = user_values.next() {
                     ctx_lock.set(name, user_value);
@@ -69,7 +70,7 @@ impl FunctionValue {
     // different boxed than in other value types
     pub fn boxed(
         node: Arc<dyn Node>,
-        ctx: Arc<RwLock<Context>>,
+        ctx: LockableContext,
         params: Vec<(String, Option<Box<dyn Value>>)>,
     ) -> ValueResult {
         Ok(Box::new(FunctionValue { node, ctx, params }))

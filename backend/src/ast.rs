@@ -1,4 +1,6 @@
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+
+use crate::context::LockableContext;
 
 use crate::context::Context;
 use crate::nodes::*;
@@ -8,7 +10,7 @@ use downcast_rs::{impl_downcast, DowncastSync};
 use pest::iterators::Pair;
 
 pub trait Node: std::fmt::Display + std::fmt::Debug + DowncastSync {
-    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult;
+    fn eval(&self, ctx: LockableContext) -> ValueResult;
 }
 
 impl_downcast!(sync Node);

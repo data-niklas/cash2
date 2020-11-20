@@ -1,14 +1,15 @@
 use crate::context::Context;
+use crate::context::LockableContext;
 use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, DictValue, IntegerValue, ListValue, NoneValue, StringValue};
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 /// Takes exactly 2 params
 /// first: a list/dict to be mapped
 /// second: the function, which will receive either the value and index of the list item, or the key and value of the dict item
-pub fn map_closure(mut params: Vec<Box<dyn Value>>, ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn map_closure(mut params: Vec<Box<dyn Value>>, ctx: LockableContext) -> ValueResult {
     if params.len() == 2 {
         let first = params.remove(0);
         let second = params.remove(0);
@@ -42,7 +43,7 @@ pub fn map_closure(mut params: Vec<Box<dyn Value>>, ctx: Arc<RwLock<Context>>) -
     }
 }
 
-pub fn each_closure(params: Vec<Box<dyn Value>>, ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn each_closure(params: Vec<Box<dyn Value>>, ctx: LockableContext) -> ValueResult {
     map_closure(params, ctx)?;
     NoneValue::boxed()
 }
@@ -50,7 +51,7 @@ pub fn each_closure(params: Vec<Box<dyn Value>>, ctx: Arc<RwLock<Context>>) -> V
 /// Takes exactly 2 params
 /// first: a list/dict to be filtered
 /// second: the function, which will receive either the value and index of the list item, or the key and value of the dict item
-pub fn filter_closure(mut params: Vec<Box<dyn Value>>, ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn filter_closure(mut params: Vec<Box<dyn Value>>, ctx: LockableContext) -> ValueResult {
     if params.len() == 2 {
         let first = params.remove(0);
         let second = params.remove(0);
@@ -104,7 +105,7 @@ pub fn filter_closure(mut params: Vec<Box<dyn Value>>, ctx: Arc<RwLock<Context>>
 
 /// Takes exactly 1 param
 /// first: a list/dict
-pub fn len_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn len_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -126,7 +127,7 @@ pub fn len_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) 
     }
 }
 
-pub fn insert_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn insert_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 3 {
         let first = params.remove(0);
         let second = params.remove(0);
@@ -150,7 +151,7 @@ pub fn insert_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>
     }
 }
 
-pub fn remove_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn remove_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 2 {
         let first = params.remove(0);
         let second = params.remove(0);

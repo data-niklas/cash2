@@ -1,10 +1,11 @@
 use crate::ast::*;
 use crate::context::Context;
+use crate::context::LockableContext;
 use crate::error::CashError;
 use crate::rules::Rule;
 use crate::value::{Value, ValueResult};
 use pest::iterators::Pairs;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use super::{Expr, Infix, Postfix};
 
@@ -17,10 +18,10 @@ pub struct Assignment {
 }
 
 impl Node for Assignment {
-    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn eval(&self, ctx: LockableContext) -> ValueResult {
         let mut result = self.expr.eval(ctx.clone())?;
         if let Some(infix) = &self.infix {
-            if let Some(mut val) = ctx.read().expect("could not read value").get(&self.ident) {
+            if let Some(mut val) = ctx.read().get(&self.ident) {
                 // handle indexed assignment
                 for index in &self.indexes {
                     match index {
@@ -45,9 +46,7 @@ impl Node for Assignment {
         }
         if self.indexes.is_empty() {
             // only place that will ever write to the context
-            ctx.write()
-                .expect("could not write value")
-                .set(&self.ident, (*result).clone());
+            ctx.write().set(&self.ident, (*result).clone());
             Ok(result)
         } else {
             let mut indexes = Vec::with_capacity(self.indexes.len());
@@ -61,7 +60,7 @@ impl Node for Assignment {
                 }
             }
 
-            let mut lock = ctx.write().expect("could not read value");
+            let mut lock = ctx.write();
             if let Some(mut val) = lock.get(&self.ident) {
                 val.indexed_set((*result).clone(), &indexes)?;
                 lock.set(&self.ident, val);

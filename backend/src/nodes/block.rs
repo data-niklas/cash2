@@ -1,10 +1,11 @@
 use crate::ast::*;
 use crate::context::Context;
+use crate::context::LockableContext;
 use crate::rules::Rule;
 use crate::value::{Value, ValueResult};
 use crate::values::ReturnValue;
 use pest::iterators::Pairs;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct Block {
@@ -13,7 +14,7 @@ pub struct Block {
 }
 
 impl Node for Block {
-    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn eval(&self, ctx: LockableContext) -> ValueResult {
         let mut lastvalue = None;
         let ctxt;
         if !self.is_root {

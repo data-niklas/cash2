@@ -1,5 +1,6 @@
 use crate::ast::*;
 use crate::context::Context;
+use crate::context::LockableContext;
 use crate::error::CashError;
 use crate::rules::Rule;
 use crate::value::{Value, ValueResult};
@@ -10,7 +11,7 @@ use std::os::unix::io::{AsRawFd, FromRawFd};
 #[cfg(target_family = "windows")]
 use std::os::windows::io::{FromRawHandle, IntoRawHandle};
 use std::process::{Command, Stdio};
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct EnvCommand {
@@ -25,7 +26,7 @@ pub struct Pipe {
 }
 
 impl Node for Pipe {
-    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn eval(&self, ctx: LockableContext) -> ValueResult {
         // construct pipe
         let mut cmd = None;
         for (i, command) in self.commands.iter().enumerate() {

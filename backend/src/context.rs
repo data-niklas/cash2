@@ -1,14 +1,17 @@
+use parking_lot::{const_mutex, const_rwlock, Mutex, RwLock};
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::Arc;
 
 use crate::cashstd;
 use crate::executor::Executor;
 use crate::value::Value;
 use crate::values::StringValue;
 
+pub type LockableContext = Arc<RwLock<Context>>;
+
 #[derive(Debug)]
 pub struct Context {
-    parent: Option<Arc<RwLock<Context>>>,
+    parent: Option<LockableContext>,
     vars: HashMap<String, Box<dyn Value>>,
     pub executor: Arc<Mutex<Executor>>,
 }
@@ -18,15 +21,12 @@ impl Context {
         Context {
             parent: None,
             vars: HashMap::new(),
-            executor: Arc::new(Mutex::new(Executor::default())),
+            executor: Arc::new(const_mutex(Executor::default())),
         }
     }
-    pub fn from_parent(parent: Arc<RwLock<Context>>) -> Arc<RwLock<Context>> {
-        let executor = parent
-            .read()
-            .expect("Could not read from RwLock")
-            .get_executor();
-        Arc::new(RwLock::new(Context {
+    pub fn from_parent(parent: LockableContext) -> LockableContext {
+        let executor = parent.read().get_executor();
+        Arc::new(const_rwlock(Context {
             parent: Some(parent),
             vars: HashMap::new(),
             executor,
@@ -49,11 +49,7 @@ impl Context {
             return Some((*self.vars.get(key).unwrap()).clone());
         }
         if let Some(parent) = &self.parent {
-            if let Some(val) = parent
-                .read()
-                .expect("COULD NOT READ VAR OUT OF HASHMAP!!!")
-                .get(key)
-            {
+            if let Some(val) = parent.read().get(key) {
                 return Some(val);
             }
         }
@@ -67,16 +63,8 @@ impl Context {
             return;
         }
         if let Some(parent) = &self.parent {
-            if parent
-                .read()
-                .expect("COULD NOT READ VAR OUT OF HASHMAP!!!")
-                .get(key)
-                .is_some()
-            {
-                parent
-                    .write()
-                    .expect("WEIRD ERROR MESSAGE TO BE CHANGED")
-                    .set(key, value);
+            if parent.read().get(key).is_some() {
+                parent.write().set(key, value);
                 return;
             }
         }
@@ -91,11 +79,7 @@ impl Context {
             return true;
         }
         if let Some(parent) = &self.parent {
-            if parent
-                .read()
-                .expect("COULD NOT READ VAR OUT OF HASHMAP!!!")
-                .exists(key)
-            {
+            if parent.read().exists(key) {
                 return true;
             }
         }

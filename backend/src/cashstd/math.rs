@@ -1,11 +1,12 @@
 use crate::context::Context;
+use crate::context::LockableContext;
 use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, FloatValue, IntegerValue};
 use rand::Rng;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
-pub fn sqrt_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn sqrt_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -26,7 +27,7 @@ pub fn sqrt_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>)
     }
 }
 
-pub fn floor_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn floor_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -44,7 +45,7 @@ pub fn floor_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>
     }
 }
 
-pub fn ceil_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn ceil_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -62,7 +63,7 @@ pub fn ceil_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>)
     }
 }
 
-pub fn round_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn round_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -80,7 +81,7 @@ pub fn round_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>
     }
 }
 
-pub fn trunc_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn trunc_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -98,7 +99,7 @@ pub fn trunc_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>
     }
 }
 
-pub fn abs_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn abs_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -119,7 +120,7 @@ pub fn abs_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) 
     }
 }
 
-pub fn sign_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn sign_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -140,7 +141,7 @@ pub fn sign_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>)
     }
 }
 
-pub fn exp_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn exp_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -161,7 +162,7 @@ pub fn exp_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) 
     }
 }
 
-pub fn ln_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn ln_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -182,7 +183,7 @@ pub fn ln_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -
     }
 }
 
-pub fn sin_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn sin_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -203,7 +204,7 @@ pub fn sin_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) 
     }
 }
 
-pub fn cos_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn cos_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -224,7 +225,7 @@ pub fn cos_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) 
     }
 }
 
-pub fn tan_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn tan_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -245,7 +246,7 @@ pub fn tan_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) 
     }
 }
 
-pub fn asin_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn asin_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -266,7 +267,7 @@ pub fn asin_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>)
     }
 }
 
-pub fn acos_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn acos_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -287,7 +288,7 @@ pub fn acos_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>)
     }
 }
 
-pub fn atan_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn atan_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -308,7 +309,7 @@ pub fn atan_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>)
     }
 }
 
-pub fn sinh_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn sinh_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -329,7 +330,7 @@ pub fn sinh_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>)
     }
 }
 
-pub fn cosh_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn cosh_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -350,7 +351,7 @@ pub fn cosh_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>)
     }
 }
 
-pub fn tanh_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn tanh_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -371,7 +372,7 @@ pub fn tanh_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>)
     }
 }
 
-pub fn asinh_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn asinh_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -392,7 +393,7 @@ pub fn asinh_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>
     }
 }
 
-pub fn acosh_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn acosh_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -413,7 +414,7 @@ pub fn acosh_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>
     }
 }
 
-pub fn atanh_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn atanh_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -434,7 +435,7 @@ pub fn atanh_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>
     }
 }
 
-pub fn isnan_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn isnan_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let first = params.remove(0);
         let type_name = first.get_type_name();
@@ -452,7 +453,7 @@ pub fn isnan_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>
     }
 }
 
-pub fn max_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn max_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 2 {
         let first = params.remove(0);
         let second = params.remove(0);
@@ -487,7 +488,7 @@ pub fn max_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) 
     }
 }
 
-pub fn min_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn min_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 2 {
         let first = params.remove(0);
         let second = params.remove(0);
@@ -522,7 +523,7 @@ pub fn min_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) 
     }
 }
 
-pub fn rand_closure(params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+pub fn rand_closure(params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.is_empty() {
         FloatValue::boxed(rand::thread_rng().gen_range(0.0, 1.0))
     } else {

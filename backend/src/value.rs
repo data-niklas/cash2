@@ -1,8 +1,9 @@
 use crate::context::Context;
+use crate::context::LockableContext;
 use crate::error::CashError;
 use downcast_rs::{impl_downcast, DowncastSync};
 use std::error::Error;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 pub type ValueResult = Result<Box<dyn Value>, Box<dyn Error + Send + Sync>>;
 
@@ -18,7 +19,7 @@ pub trait Value: DowncastSync + std::fmt::Display + std::fmt::Debug {
     fn index(&self, _index: &Box<dyn Value>) -> ValueResult {
         CashError::InvalidOperation("indexing".to_owned(), self.get_type_name().to_owned()).boxed()
     }
-    fn call(&self, _params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+    fn call(&self, _params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
         CashError::InvalidOperation("function call".to_owned(), self.get_type_name().to_owned())
             .boxed()
     }

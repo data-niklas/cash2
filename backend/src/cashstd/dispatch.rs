@@ -5,9 +5,10 @@ use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, BuiltInFunction, DictValue, ListValue, NoneValue, StringValue};
 use std::env;
 
-use std::sync::{Arc, RwLock};
+use crate::context::LockableContext;
+use std::sync::Arc;
 
-fn print_closure(params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+fn print_closure(params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     for param in params {
         print!("{}", param);
     }
@@ -15,7 +16,7 @@ fn print_closure(params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> Val
     NoneValue::boxed()
 }
 
-fn type_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+fn type_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         StringValue::boxed(params.remove(0).get_type_name().to_owned())
     } else {
@@ -23,14 +24,10 @@ fn type_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> 
     }
 }
 
-fn exists_closure(mut params: Vec<Box<dyn Value>>, ctx: Arc<RwLock<Context>>) -> ValueResult {
+fn exists_closure(mut params: Vec<Box<dyn Value>>, ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         let value = format!("{}", params.remove(0));
-        BooleanValue::boxed(
-            ctx.read()
-                .expect("Could not read from Context")
-                .exists(&value),
-        )
+        BooleanValue::boxed(ctx.read().exists(&value))
     } else if params.len() == 2 {
         let value = params.remove(0);
         let second = params.remove(0);
@@ -47,7 +44,7 @@ fn exists_closure(mut params: Vec<Box<dyn Value>>, ctx: Arc<RwLock<Context>>) ->
     }
 }
 
-fn cwd_closure(params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+fn cwd_closure(params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.is_empty() {
         StringValue::boxed(
             env::current_dir()
@@ -61,7 +58,7 @@ fn cwd_closure(params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> Value
     }
 }
 
-fn cd_closure(mut params: Vec<Box<dyn Value>>, _ctx: Arc<RwLock<Context>>) -> ValueResult {
+fn cd_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {
         env::set_current_dir(std::path::Path::new(&params.remove(0).to_string()))?;
         NoneValue::boxed()

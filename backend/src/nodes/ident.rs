@@ -1,10 +1,11 @@
 use crate::ast::*;
 use crate::context::Context;
+use crate::context::LockableContext;
 use crate::error::CashError;
 use crate::rules::Rule;
 use crate::value::{Value, ValueResult};
 use pest::iterators::Pair;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 #[derive(Clone, Debug)]
 pub struct Ident {
@@ -12,8 +13,8 @@ pub struct Ident {
 }
 
 impl Node for Ident {
-    fn eval(&self, ctx: Arc<RwLock<Context>>) -> ValueResult {
-        if let Some(val) = ctx.read().expect("could not read value").get(&self.ident) {
+    fn eval(&self, ctx: LockableContext) -> ValueResult {
+        if let Some(val) = ctx.read().get(&self.ident) {
             Ok(val)
         } else {
             CashError::VariableNotFound(self.ident.clone()).boxed()
