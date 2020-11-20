@@ -52,6 +52,34 @@ impl Runtime {
                 }),
             );
         }
+
+        #[cfg(feature = "deadlock_detection")]
+        {
+            println!("started deadlock detection");
+            // only for #[cfg]
+            use parking_lot::deadlock;
+            use std::thread;
+            use std::time::Duration;
+
+            // Create a background thread which checks for deadlocks every 10s
+            thread::spawn(move || loop {
+                thread::sleep(Duration::from_secs(10));
+                let deadlocks = deadlock::check_deadlock();
+                if deadlocks.is_empty() {
+                    continue;
+                }
+
+                println!("{} deadlocks detected", deadlocks.len());
+                for (i, threads) in deadlocks.iter().enumerate() {
+                    println!("Deadlock #{}", i);
+                    for t in threads {
+                        println!("Thread Id {:#?}", t.thread_id());
+                        println!("{:#?}", t.backtrace());
+                    }
+                }
+            });
+        }
+
         runtime
     }
 
@@ -97,32 +125,6 @@ impl Runtime {
 
     pub fn interpret(&mut self, text: String) -> ValueResult {
         //A is used for debugging purposes
-        #[cfg(feature = "deadlock_detection")]
-        {
-{
-            // only for #[cfg]
-            use parking_lot::deadlock;
-            use std::thread;
-            use std::time::Duration;
-
-            // Create a background thread which checks for deadlocks every 10s
-            thread::spawn(move || loop {
-                thread::sleep(Duration::from_secs(10));
-                let deadlocks = deadlock::check_deadlock();
-                if deadlocks.is_empty() {
-                    continue;
-                }
-
-                println!("{} deadlocks detected", deadlocks.len());
-                for (i, threads) in deadlocks.iter().enumerate() {
-                    println!("Deadlock #{}", i);
-                    for t in threads {
-                        println!("Thread Id {:#?}", t.thread_id());
-                        println!("{:#?}", t.backtrace());
-                    }
-                }
-            });
-        }
 
         let text = text.trim().to_owned();
 
