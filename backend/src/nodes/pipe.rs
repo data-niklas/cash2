@@ -2,8 +2,9 @@ use crate::ast::*;
 use crate::context::Context;
 use crate::context::LockableContext;
 use crate::error::CashError;
+use crate::nodes::StringLiteral;
 use crate::rules::Rule;
-use crate::value::{Value, ValueResult};
+use crate::value::ValueResult;
 use crate::values::{NoneValue, StringValue};
 use pest::iterators::Pairs;
 #[cfg(target_family = "unix")]
@@ -105,8 +106,22 @@ impl Pipe {
             let name = ident.as_span().as_str().to_owned();
 
             let mut args = Vec::new();
-            for arg in call.into_inner() {
-                args.push(make_ast(arg)?);
+
+            if call.as_rule() == Rule::FunctionCall {
+                for arg in call.into_inner() {
+                    args.push(make_ast(arg)?);
+                }
+            } else {
+                for arg in call.into_inner() {
+                    if arg.as_rule() == Rule::PipeIdent {
+                        args.push(Arc::new(StringLiteral {
+                            strings: vec![arg.as_span().as_str().to_owned()],
+                            interpolations: Vec::new(),
+                        }));
+                    } else {
+                        args.push(make_ast(arg)?);
+                    }
+                }
             }
 
             commands.push(EnvCommand { name, args })

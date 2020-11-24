@@ -24,7 +24,8 @@ Expr = { Async? ~ Prefix* ~ Primary ~ Postfix* ~ (Infix ~ Prefix* ~ Primary ~ Po
 Async = {"async"}
 Primary = _{ Literal | Ident | Paren | Capture | WrappedBlock}
 Pipe = { PipeCall ~ ( "|" ~ PipeCall)* }
-PipeCall = { Ident ~ FunctionCall}
+PipeCall = { Ident ~ (FunctionCall | PipeArgs)}
+PipeArgs = { (String | PipeIdent)* }
 Capture = { "$" ~ Pipe }
 Literal = { Function | Range | Float | Int | String | Bool | List | Dict }
 Paren = _{ "(" ~ Expr ~ ")" }
@@ -55,6 +56,7 @@ BinInt = @{ ASCII_BIN_DIGIT ~ ( "_"* ~ ASCII_BIN_DIGIT)* }
 Float = @{ DecInt? ~ (("." ~ DecInt ~ "_"* ~ ( "e" ~ DecInt)?) | "e" ~ DecInt) }
 Bool = @{ "false" | "true" }
 Ident = @{ (!Keyword ~ ASCII_ALPHA ~ ( ASCII_ALPHANUMERIC | "_")* ) | (("$" | Keyword) ~ ( ASCII_ALPHANUMERIC | "_")+ ) }
+PipeIdent = @{"-"? ~ Ident}
 Range = { (Int | Ident) ~ ".." ~ (Int | Ident) }
 
 

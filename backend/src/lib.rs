@@ -55,7 +55,6 @@ impl Runtime {
 
         #[cfg(feature = "deadlock_detection")]
         {
-            println!("started deadlock detection");
             // only for #[cfg]
             use parking_lot::deadlock;
             use std::thread;
