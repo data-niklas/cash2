@@ -1,8 +1,6 @@
 use crate::ast::Node;
-use crate::context::{Context, LockableContext};
-use crate::error::CashError;
+use crate::context::LockableContext;
 use crate::value::ValueResult;
-use num_cpus;
 use parking_lot::{const_mutex, const_rwlock, Mutex, RwLock};
 use std::collections::HashMap;
 use std::sync::Arc;

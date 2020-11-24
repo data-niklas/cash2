@@ -1,9 +1,7 @@
-use crate::context::Context;
 use crate::context::LockableContext;
 use crate::error::CashError;
 use downcast_rs::{impl_downcast, DowncastSync};
 use std::error::Error;
-use std::sync::Arc;
 
 pub type ValueResult = Result<Box<dyn Value>, Box<dyn Error + Send + Sync>>;
 

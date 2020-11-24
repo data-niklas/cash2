@@ -2,7 +2,7 @@ use crate::ast::*;
 use crate::context::Context;
 use crate::context::LockableContext;
 use crate::rules::Rule;
-use crate::value::{Value, ValueResult};
+use crate::value::ValueResult;
 use crate::values::ReturnValue;
 use pest::iterators::Pairs;
 use std::sync::Arc;

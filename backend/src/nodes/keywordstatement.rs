@@ -1,10 +1,9 @@
 use crate::ast::*;
-use crate::context::Context;
 use crate::context::LockableContext;
 use crate::error::CashError;
 use crate::nodes::NoneLiteral;
 use crate::rules::Rule;
-use crate::value::{Value, ValueResult};
+use crate::value::ValueResult;
 use crate::values::{BreakValue, ContinueValue, ReturnValue};
 use pest::iterators::Pairs;
 use std::sync::Arc;

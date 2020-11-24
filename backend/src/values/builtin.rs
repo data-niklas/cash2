@@ -1,7 +1,5 @@
-use crate::context::Context;
 use crate::context::LockableContext;
 use crate::value::{Value, ValueResult};
-use std::sync::Arc;
 
 pub struct BuiltInFunction<
     F: 'static + Fn(Vec<Box<dyn Value>>, LockableContext) -> ValueResult + Send + Sync + Sync,

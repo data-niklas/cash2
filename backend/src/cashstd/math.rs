@@ -1,10 +1,8 @@
-use crate::context::Context;
 use crate::context::LockableContext;
 use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, FloatValue, IntegerValue};
 use rand::Rng;
-use std::sync::Arc;
 
 pub fn sqrt_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     if params.len() == 1 {

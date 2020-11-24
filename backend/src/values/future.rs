@@ -1,9 +1,8 @@
 use crate::ast::Node;
-use crate::context::Context;
 use crate::context::LockableContext;
 use crate::executor::Executor;
 use crate::value::{Value, ValueResult};
-use parking_lot::{Mutex, RwLock};
+use parking_lot::Mutex;
 use std::sync::Arc;
 
 #[derive(Debug, Clone)]

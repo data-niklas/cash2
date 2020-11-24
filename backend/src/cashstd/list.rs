@@ -1,10 +1,8 @@
-use crate::context::Context;
 use crate::context::LockableContext;
 use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, DictValue, IntegerValue, ListValue, NoneValue, StringValue};
 use std::collections::HashMap;
-use std::sync::Arc;
 
 /// Takes exactly 2 params
 /// first: a list/dict to be mapped
@@ -103,6 +101,26 @@ pub fn filter_closure(mut params: Vec<Box<dyn Value>>, ctx: LockableContext) -> 
     }
 }
 
+pub fn reduce_closure(mut params: Vec<Box<dyn Value>>, ctx: LockableContext) -> ValueResult {
+    if params.len() == 3 {
+        let first = params.remove(0);
+        let second = params.remove(0);
+        let mut third = params.remove(0);
+        let type_name = first.get_type_name();
+        if let Ok(first) = first.downcast::<ListValue>() {
+            for (i, value) in first.values.into_iter().enumerate() {
+                let index = Box::new(IntegerValue { value: i as i64 });
+                third = second.call(vec![third, value, index], ctx.clone())?;
+            }
+            Ok(third)
+        } else {
+            CashError::InvalidArguments(type_name.to_owned(), "List".to_owned()).boxed()
+        }
+    } else {
+        CashError::InvalidParameterCount(params.len(), 4).boxed()
+    }
+}
+
 /// Takes exactly 1 param
 /// first: a list/dict
 pub fn len_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
@@ -171,5 +189,35 @@ pub fn remove_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) ->
         }
     } else {
         CashError::InvalidParameterCount(params.len(), 2).boxed()
+    }
+}
+
+pub fn push_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
+    if params.len() == 2 {
+        let first = params.remove(0);
+        let second = params.remove(0);
+        let type_name = first.get_type_name();
+        if let Ok(first) = first.downcast::<ListValue>() {
+            first.add(&second)
+        } else {
+            CashError::InvalidArguments(type_name.to_owned(), "List".to_owned()).boxed()
+        }
+    } else {
+        CashError::InvalidParameterCount(params.len(), 2).boxed()
+    }
+}
+
+pub fn pop_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
+    if params.len() == 1 {
+        let first = params.remove(0);
+        let type_name = first.get_type_name();
+        if let Ok(first) = first.downcast::<ListValue>() {
+            let index = first.values.len() - 1;
+            first.remove(&IntegerValue::boxed((index) as i64)?)
+        } else {
+            CashError::InvalidArguments(type_name.to_owned(), "List".to_owned()).boxed()
+        }
+    } else {
+        CashError::InvalidParameterCount(params.len(), 1).boxed()
     }
 }

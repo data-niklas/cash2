@@ -1,12 +1,10 @@
 use super::*;
-use crate::context::Context;
 use crate::error::CashError;
 use crate::value::{Value, ValueResult};
 use crate::values::{BooleanValue, BuiltInFunction, DictValue, ListValue, NoneValue, StringValue};
 use std::env;
 
 use crate::context::LockableContext;
-use std::sync::Arc;
 
 fn print_closure(params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
     for param in params {
@@ -76,10 +74,13 @@ pub fn get_stdlib_function(ident: &str) -> Option<Box<dyn Value>> {
         "each" => BuiltInFunction::boxed(&each_closure),
         "map" => BuiltInFunction::boxed(&map_closure),
         "filter" => BuiltInFunction::boxed(&filter_closure),
+        "reduce" => BuiltInFunction::boxed(&reduce_closure),
         "len" => BuiltInFunction::boxed(&len_closure),
 
         "remove" => BuiltInFunction::boxed(&remove_closure),
         "insert" => BuiltInFunction::boxed(&insert_closure),
+        "push" => BuiltInFunction::boxed(&push_closure),
+        "pop" => BuiltInFunction::boxed(&pop_closure),
 
         "type" => BuiltInFunction::boxed(&type_closure),
         "exists" => BuiltInFunction::boxed(&exists_closure),

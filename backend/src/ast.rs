@@ -2,10 +2,9 @@ use std::sync::Arc;
 
 use crate::context::LockableContext;
 
-use crate::context::Context;
 use crate::nodes::*;
 use crate::rules::Rule;
-use crate::value::{Value, ValueResult};
+use crate::value::ValueResult;
 use downcast_rs::{impl_downcast, DowncastSync};
 use pest::iterators::Pair;
 

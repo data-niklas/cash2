@@ -1,6 +1,6 @@
 //By default, eval async and wait for completion
 //#BeDefault
-use parking_lot::{const_rwlock, RwLock};
+use parking_lot::const_rwlock;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -20,7 +20,7 @@ use crate::context::LockableContext;
 use context::Context;
 use error::CashError;
 use pest::Parser;
-use value::{Value, ValueResult};
+use value::ValueResult;
 
 pub struct Runtime {
     ctx: LockableContext,

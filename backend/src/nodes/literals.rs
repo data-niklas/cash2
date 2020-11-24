@@ -1,5 +1,4 @@
 use crate::ast::*;
-use crate::context::Context;
 use crate::context::LockableContext;
 use crate::error::CashError;
 use crate::rules::Rule;
