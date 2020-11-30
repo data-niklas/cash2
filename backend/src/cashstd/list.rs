@@ -221,3 +221,31 @@ pub fn pop_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> Va
         CashError::InvalidParameterCount(params.len(), 1).boxed()
     }
 }
+
+pub fn join_closure(mut params: Vec<Box<dyn Value>>, _ctx: LockableContext) -> ValueResult {
+    if params.len() == 2 {
+        let first = params.remove(0);
+        let second = params.remove(0);
+        let first_type_name = first.get_type_name();
+        let second_type_name = first.get_type_name();
+        if let Ok(first) = first.downcast::<ListValue>() {
+            if let Ok(second) = second.downcast::<StringValue>() {
+                let mut joined = String::new();
+                for (index, item) in first.values.into_iter().enumerate() {
+                    if index != 0 {
+                        joined += &second.value;
+                    }
+                    joined += &item.to_string();
+                }
+                StringValue::boxed(joined)
+            } else {
+                CashError::InvalidArguments(second_type_name.to_owned(), "String".to_owned())
+                    .boxed()
+            }
+        } else {
+            CashError::InvalidArguments(first_type_name.to_owned(), "List".to_owned()).boxed()
+        }
+    } else {
+        CashError::InvalidParameterCount(params.len(), 2).boxed()
+    }
+}

@@ -75,6 +75,7 @@ pub fn get_stdlib_function(ident: &str) -> Option<Box<dyn Value>> {
         "map" => BuiltInFunction::boxed(&map_closure),
         "filter" => BuiltInFunction::boxed(&filter_closure),
         "reduce" => BuiltInFunction::boxed(&reduce_closure),
+        "join" => BuiltInFunction::boxed(&join_closure),
         "len" => BuiltInFunction::boxed(&len_closure),
 
         "remove" => BuiltInFunction::boxed(&remove_closure),
