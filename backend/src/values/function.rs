@@ -27,17 +27,28 @@ impl Value for FunctionValue {
             return CashError::InvalidParameterCount(param_count, self.params.len()).boxed();
         }
         let mut user_values = params.into_iter();
-
         {
             let mut ctx_lock = ctx.write();
-            for (name, val) in self.params.iter() {
+            let mut iter = self.params.iter();
+            while let Some((name, val)) = iter.next() {
                 if let Some(user_value) = user_values.next() {
                     ctx_lock.set(name, user_value);
                 } else if let Some(default_value) = val {
                     ctx_lock.set(name, (*default_value).clone());
                 } else {
-                    return CashError::InvalidParameterCount(param_count, self.params.len())
-                        .boxed();
+                    let mut new_params = Vec::new();
+                    new_params.push((name.to_string(), None));
+                    while let Some((name, val)) = iter.next() {
+                        if let Some(val) = val {
+                            new_params.push((name.to_string(), Some((*val).clone())));
+                        } else {
+                            new_params.push((name.to_string(), None));
+                        }
+                    }
+                    drop(ctx_lock);
+                    return FunctionValue::boxed(self.node.clone(), ctx, new_params);
+                    //return CashError::InvalidParameterCount(param_count, self.params.len())
+                    // .boxed();
                 }
             }
         }
